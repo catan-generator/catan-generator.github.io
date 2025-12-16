@@ -291,7 +291,7 @@ function draw(boardState) {
 
   board.appendChild(defs);
 
-  const size = 80;
+  const size = 110;
   const origin = { x: 550, y: 440 };
 
   const tiles = boardState;
@@ -318,11 +318,11 @@ function draw(boardState) {
     g.appendChild(poly);
     g.appendChild(overlay);
 
-    const imgSize = 80;
+    const imgSize = 110;
     const img = svgEl("image", {
       href: meta.img + '?v=2.0',
       x: x - imgSize/2,
-      y: y - imgSize/2 - 10,
+      y: y - imgSize/2 - 14,
       width: imgSize,
       height: imgSize,
       opacity: "0.96",
@@ -334,16 +334,16 @@ function draw(boardState) {
       const isHot = (tile.number === 6 || tile.number === 8);
 
       const circle = svgEl("circle", {
-        cx: x, cy: y + 35, r: 22,
+        cx: x, cy: y + 48, r: 30,
         fill: "rgba(255,255,255,.86)",
         stroke: "rgba(0,0,0,.25)",
-        "stroke-width":  "2"
+        "stroke-width":  "2.5"
       });
 
       const num = svgEl("text", {
-        x, y: y + 42,
+        x, y: y + 58,
         "text-anchor": "middle",
-        "font-size": "22",
+        "font-size": "30",
         "font-weight": "800",
         fill: isHot ? "#c1121f" : "#111827"
       });
@@ -355,9 +355,9 @@ function draw(boardState) {
 
     if (tile.key === "desert") {
       const robber = svgEl("text", {
-        x, y: y + 42,
+        x, y: y + 58,
         "text-anchor": "middle",
-        "font-size":  "14",
+        "font-size":  "18",
         "font-weight":  "800",
         fill: "rgba(17,24,39,.75)"
       });

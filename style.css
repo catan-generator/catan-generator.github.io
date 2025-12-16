@@ -24,6 +24,7 @@ body{
   min-height: 100vh;
   color: var(--text);
   line-height: 1.6;
+  padding-top: env(safe-area-inset-top);
 }
 
 h3 {
@@ -281,24 +282,25 @@ select:focus{
 @media (max-width: 1024px) {
   main {
     grid-template-columns: 1fr;
-    padding: 16px;
+    padding: 12px;
+    gap: 16px;
   }
 
   .topbar {
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
     align-items: stretch;
-    padding: 20px;
+    padding: 16px;
   }
 
   .brand {
     text-align: center;
-    font-size: 22px;
+    font-size: 20px;
   }
 
   .controls {
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
   }
 
   .controls label {
@@ -315,35 +317,56 @@ select:focus{
     font-size: 15px;
   }
 
+  /* Board first on mobile */
   .canvasWrap {
-    overflow-x: auto;
+    order: 1;
+    overflow: auto;
     border-radius: 12px;
-    padding: 20px;
+    padding: 12px;
     -webkit-overflow-scrolling: touch;
+    margin-bottom: 0;
+    max-height: 70vh;
   }
 
   #board {
     width: 100%;
     height: auto;
+    min-width: auto;
+    max-height: 65vh;
   }
 
+  /* Sidebar second on mobile */
   .sidebar {
-    order: 1;
+    order: 2;
   }
 
-  .canvasWrap {
-    order: 2;
+  .panel {
+    padding: 16px;
+  }
+
+  h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
   }
 }
 
 @media (max-width: 640px) {
   .topbar {
-    padding: 16px;
+    padding: 12px;
   }
 
   main {
-    padding: 12px;
-    gap: 16px;
+    padding: 8px;
+    gap: 12px;
+  }
+
+  .canvasWrap {
+    padding: 8px;
+    max-height: 65vh;
+  }
+
+  #board {
+    max-height: 60vh;
   }
 
   .panel {
