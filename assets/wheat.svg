@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Classic Catan Wheat Bundle -->
+  <defs>
+    <filter id="wheatShadow">
+      <feDropShadow dx="1" dy="2" stdDeviation="1.5" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Ground -->
+  <ellipse cx="50" cy="85" rx="20" ry="4" fill="#000" opacity="0.15"/>
+
+  <!-- Wheat stalks - Back row -->
+  <g filter="url(#wheatShadow)">
+    <!-- Left stalk -->
+    <line x1="35" y1="75" x2="30" y2="30" stroke="#d4a747" stroke-width="2" stroke-linecap="round"/>
+    <ellipse cx="30" cy="28" rx="3" ry="8" fill="#e6c84e"/>
+    <ellipse cx="28" cy="26" rx="2" ry="4" fill="#f4d57d"/>
+    <ellipse cx="32" cy="26" rx="2" ry="4" fill="#f4d57d"/>
+
+    <!-- Right stalk -->
+    <line x1="65" y1="75" x2="70" y2="30" stroke="#d4a747" stroke-width="2" stroke-linecap="round"/>
+    <ellipse cx="70" cy="28" rx="3" ry="8" fill="#e6c84e"/>
+    <ellipse cx="68" cy="26" rx="2" ry="4" fill="#f4d57d"/>
+    <ellipse cx="72" cy="26" rx="2" ry="4" fill="#f4d57d"/>
+
+    <!-- Center back stalk -->
+    <line x1="50" y1="75" x2="48" y2="25" stroke="#d4a747" stroke-width="2" stroke-linecap="round"/>
+    <ellipse cx="48" cy="23" rx="3" ry="8" fill="#e6c84e"/>
+    <ellipse cx="46" cy="21" rx="2" ry="4" fill="#f4d57d"/>
+    <ellipse cx="50" cy="21" rx="2" ry="4" fill="#f4d57d"/>
+  </g>
+
+  <!-- Wheat stalks - Front row -->
+  <g filter="url(#wheatShadow)">
+    <!-- Left front stalk -->
+    <line x1="40" y1="78" x2="38" y2="35" stroke="#d4a747" stroke-width="2.5" stroke-linecap="round"/>
+    <ellipse cx="38" cy="32" rx="4" ry="10" fill="#e6c84e"/>
+    <ellipse cx="35" cy="30" rx="2.5" ry="5" fill="#f4d57d"/>
+    <ellipse cx="41" cy="30" rx="2.5" ry="5" fill="#f4d57d"/>
+    <ellipse cx="38" cy="27" rx="2" ry="4" fill="#fae89a"/>
+
+    <!-- Center front stalk -->
+    <line x1="50" y1="78" x2="52" y2="32" stroke="#d4a747" stroke-width="2.5" stroke-linecap="round"/>
+    <ellipse cx="52" cy="29" rx="4" ry="10" fill="#e6c84e"/>
+    <ellipse cx="49" cy="27" rx="2.5" ry="5" fill="#f4d57d"/>
+    <ellipse cx="55" cy="27" rx="2.5" ry="5" fill="#f4d57d"/>
+    <ellipse cx="52" cy="24" rx="2" ry="4" fill="#fae89a"/>
+
+    <!-- Right front stalk -->
+    <line x1="60" y1="78" x2="62" y2="35" stroke="#d4a747" stroke-width="2.5" stroke-linecap="round"/>
+    <ellipse cx="62" cy="32" rx="4" ry="10" fill="#e6c84e"/>
+    <ellipse cx="59" cy="30" rx="2.5" ry="5" fill="#f4d57d"/>
+    <ellipse cx="65" cy="30" rx="2.5" ry="5" fill="#f4d57d"/>
+    <ellipse cx="62" cy="27" rx="2" ry="4" fill="#fae89a"/>
+  </g>
+
+  <!-- Ribbon/Bundle tie -->
+  <rect x="45" y="73" width="10" height="8" fill="#c19a6b" rx="2" filter="url(#wheatShadow)"/>
+  <rect x="46" y="74" width="8" height="2" fill="#d4a574" opacity="0.8"/>
+</svg>
+
