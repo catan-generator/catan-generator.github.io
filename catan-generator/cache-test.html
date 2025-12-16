@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <title>Catan - Cache Test</title>
+  <style>
+    :root{
+      --bg: #1a202c;
+      --panel: #2d3748;
+      --surface: #4a5568;
+      --text: #f7fafc;
+      --muted: #a0aec0;
+      --accent: #4299e1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #2d3748 0%, #1a202c 50%, #2d3748 100%);
+      min-height: 100vh;
+      color: var(--text);
+      padding: 40px;
+    }
+
+    .test-box {
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: center;
+      padding: 40px;
+      background: linear-gradient(135deg, rgba(74,85,104,0.4) 0%, rgba(45,55,72,0.5) 100%);
+      border: 1px solid rgba(160,174,192,0.2);
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+
+    h1 {
+      color: var(--accent);
+      margin-bottom: 20px;
+      font-size: 32px;
+    }
+
+    p {
+      color: var(--text);
+      margin: 20px 0;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+
+    .button {
+      display: inline-block;
+      padding: 12px 24px;
+      margin: 10px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 14px rgba(66,153,225,0.4);
+      text-transform: uppercase;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(66,153,225,0.5);
+    }
+
+    .color-box {
+      display: inline-block;
+      width: 100px;
+      height: 100px;
+      margin: 10px;
+      border-radius: 10px;
+      border: 2px solid rgba(160,174,192,0.3);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .bg-dark { background: #1a202c; }
+    .bg-panel { background: #2d3748; }
+    .bg-surface { background: #4a5568; }
+    .bg-accent { background: #4299e1; }
+
+    .label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-box">
+    <h1>🎨 Theme Color Test</h1>
+    <p><strong>If you see GRAY-BLUE background, theme is working!</strong></p>
+    <p>If you see BLACK, press <strong>Cmd+Shift+R</strong> (Mac) or <strong>Ctrl+Shift+R</strong> (Windows)</p>
+
+    <div style="margin: 30px 0;">
+      <div style="display: inline-block; text-align: center;">
+        <div class="color-box bg-dark"></div>
+        <span class="label">#1a202c<br>Background Dark</span>
+      </div>
+
+      <div style="display: inline-block; text-align: center;">
+        <div class="color-box bg-panel"></div>
+        <span class="label">#2d3748<br>Panel</span>
+      </div>
+
+      <div style="display: inline-block; text-align: center;">
+        <div class="color-box bg-surface"></div>
+        <span class="label">#4a5568<br>Surface</span>
+      </div>
+
+      <div style="display: inline-block; text-align: center;">
+        <div class="color-box bg-accent"></div>
+        <span class="label">#4299e1<br>Accent Blue</span>
+      </div>
+    </div>
+
+    <a href="index.html" class="button">Go to Main App</a>
+  </div>
+</body>
+</html>
+
