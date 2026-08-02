@@ -145,14 +145,20 @@ function violatesConstraintsAtPlacement({coordKey, tileKey, number}, placed, nei
     }
 
     if (number != null && p.number != null) {
+      const isRed = (n) => n === 6 || n === 8;
+
+      // Red numbers (6 and 8) can never touch each other, even if they're different
+      if (isRed(p.number) && isRed(number)) {
+        if (!options.redCanTouch) {
+          return true;
+        }
+      }
+
+      // Check if same numbers can touch (but red numbers already checked above)
       if (!options.sameNumbersCanTouch) {
         if (p.number === number) return true;
       }
 
-      if (!options.redCanTouch) {
-        const isRed = (n) => n === 6 || n === 8;
-        if (isRed(p.number) && isRed(number)) return true;
-      }
 
       if (!options.twoTwelveCanTouch) {
         const isTwoTwelvePair =
@@ -174,7 +180,7 @@ function violatesConstraintsAtPlacement({coordKey, tileKey, number}, placed, nei
 }
 
 // Assign tiles + numbers with constraints by retrying shuffles
-function generateBoardWithRules(seedStr, options, maxAttempts = 15000) {
+function generateBoardWithRules(seedStr, options, maxAttempts = 100000) {
   const rng = seededRng(seedStr);
   const coords = baseAxialCoords();
   const neighMap = buildNeighborMap(coords);
@@ -213,9 +219,61 @@ function generateBoardWithRules(seedStr, options, maxAttempts = 15000) {
     }
   }
 
+  // Fallback: try to respect at least red numbers rule
   const fallbackRng = seededRng(seedStr + "|fallback");
-  const tileKeys = shuffleInPlace(defaultTileBag().slice(), fallbackRng);
-  const nums = shuffleInPlace(defaultNumberBag().slice(), fallbackRng);
+
+  for (let fallbackAttempt = 0; fallbackAttempt < 10000; fallbackAttempt++) {
+    const tileKeys = shuffleInPlace(defaultTileBag().slice(), fallbackRng);
+    const nums = shuffleInPlace(defaultNumberBag().slice(), fallbackRng);
+
+    const placed = new Map();
+    const allPlaced = [];
+    let numIdx = 0;
+    let ok = true;
+
+    for (let i = 0; i < coords.length; i++) {
+      const coordKey = axialToKey(coords[i].q, coords[i].r);
+      const tileKey = tileKeys[i];
+      const number = (tileKey === "desert") ? null : nums[numIdx++];
+
+      // At least check red numbers constraint in fallback
+      if (!options.redCanTouch && number != null) {
+        const neighs = neighMap.get(coordKey) || [];
+        let redViolation = false;
+        for (const nk of neighs) {
+          const p = placed.get(nk);
+          if (p && p.number != null) {
+            const isRed = (n) => n === 6 || n === 8;
+            if (isRed(p.number) && isRed(number)) {
+              redViolation = true;
+              break;
+            }
+          }
+        }
+        if (redViolation) {
+          ok = false;
+          break;
+        }
+      }
+
+      const entry = { tileKey, number };
+      placed.set(coordKey, entry);
+      allPlaced.push({ coordKey, tileKey, number });
+    }
+
+    if (ok) {
+      return coords.map((c, i) => {
+        const p = placed.get(axialToKey(c.q, c.r));
+        return { ...c, key: p.tileKey, number: p.number };
+      });
+    }
+  }
+
+  // Last resort: completely random
+  console.info("Using random board generation (some constraints may not be satisfied)");
+  const lastResortRng = seededRng(seedStr + "|lastresort");
+  const tileKeys = shuffleInPlace(defaultTileBag().slice(), lastResortRng);
+  const nums = shuffleInPlace(defaultNumberBag().slice(), lastResortRng);
   let numIdx = 0;
   return coords.map((c, i) => ({
     ...c,
@@ -374,20 +432,25 @@ function currentSeed() {
 }
 
 function regenerate() {
-  const seedStr = currentSeed();
-  const options = readOptions();
-  const state = generateBoardWithRules(seedStr, options);
-  draw(state);
+  try {
+    const seedStr = currentSeed();
+    const options = readOptions();
+    const state = generateBoardWithRules(seedStr, options);
+    draw(state);
 
-  const url = new URL(window.location.href);
-  url.searchParams.set("seed", seedStr);
-  url.searchParams.set("preset", presetSelect.value);
-  url.searchParams.set("red", options.redCanTouch ?  "1" : "0");
-  url.searchParams.set("t2", options.twoTwelveCanTouch ? "1" :  "0");
-  url.searchParams.set("sn", options.sameNumbersCanTouch ? "1" : "0");
-  url.searchParams.set("sr", options.sameResourceCanTouch ? "1" :  "0");
-  url.searchParams.set("rsn", options.sameResourceSameNumber ? "1" : "0");
-  history.replaceState(null, "", url.toString());
+    const url = new URL(window.location.href);
+    url.searchParams.set("seed", seedStr);
+    url.searchParams.set("preset", presetSelect.value);
+    url.searchParams.set("red", options.redCanTouch ?  "1" : "0");
+    url.searchParams.set("t2", options.twoTwelveCanTouch ? "1" :  "0");
+    url.searchParams.set("sn", options.sameNumbersCanTouch ? "1" : "0");
+    url.searchParams.set("sr", options.sameResourceCanTouch ? "1" :  "0");
+    url.searchParams.set("rsn", options.sameResourceSameNumber ? "1" : "0");
+    history.replaceState(null, "", url.toString());
+  } catch (error) {
+    console.error("Error in regenerate:", error);
+    alert("Harita oluşturulurken hata: " + error.message);
+  }
 }
 
 function randomSeed() {
@@ -421,8 +484,21 @@ loadFromUrl();
 if (presetSelect.value === "classic") applyPreset("classic");
 regenerate();
 
-generateBtn.addEventListener("click", regenerate);
-randomSeedBtn.addEventListener("click", () => { seedInput.value = randomSeed(); regenerate(); });
+// "Yeni Harita" - generate new random board
+generateBtn.addEventListener("click", () => {
+  seedInput.value = randomSeed();
+  regenerate();
+});
+
+// "Rastgele Seed" - also generate new random board (same as Yeni Harita)
+randomSeedBtn.addEventListener("click", () => {
+  seedInput.value = randomSeed();
+  regenerate();
+});
+
+// Auto-regenerate when seed input changes manually
+seedInput.addEventListener("input", regenerate);
+
 showNumbersEl.addEventListener("change", regenerate);
 
 presetSelect.addEventListener("change", () => {
