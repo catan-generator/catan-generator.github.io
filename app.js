@@ -187,93 +187,12 @@ function violatesConstraintsAtPlacement({coordKey, tileKey, number}, placed, nei
   return false;
 }
 
-// Assign tiles + numbers with constraints by retrying shuffles
-function generateBoardWithRules(seedStr, options, maxAttempts = 200000) {
-  const rng = seededRng(seedStr);
-  const coords = baseAxialCoords();
-  const neighMap = buildNeighborMap(coords);
-
-
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    const tileKeys = shuffleInPlace(defaultTileBag().slice(), rng);
-    const nums = shuffleInPlace(defaultNumberBag().slice(), rng);
-
-    const placed = new Map();
-    const allPlaced = [];
-    let numIdx = 0;
-    let ok = true;
-
-    for (let i = 0; i < coords.length; i++) {
-      const coordKey = axialToKey(coords[i].q, coords[i].r);
-      const tileKey = tileKeys[i];
-
-      const number = (tileKey === "desert") ? null : nums[numIdx++];
-
-      if (violatesConstraintsAtPlacement({coordKey, tileKey, number}, placed, neighMap, options, allPlaced)) {
-        ok = false;
-        break;
-      }
-
-      const entry = { tileKey, number };
-      placed.set(coordKey, entry);
-      allPlaced.push({ coordKey, tileKey, number });
-    }
-
-    if (ok) {
-      return coords.map((c, i) => {
-        const p = placed.get(axialToKey(c.q, c.r));
-        return { ...c, key: p.tileKey, number: p.number };
-      });
-    }
-  }
-
-  // Fallback: use same constraint check but with more attempts
-  const fallbackRng = seededRng(seedStr + "|fallback");
-
-  for (let fallbackAttempt = 0; fallbackAttempt < 50000; fallbackAttempt++) {
-    const tileKeys = shuffleInPlace(defaultTileBag().slice(), fallbackRng);
-    const nums = shuffleInPlace(defaultNumberBag().slice(), fallbackRng);
-
-    const placed = new Map();
-    const allPlaced = [];
-    let numIdx = 0;
-    let ok = true;
-
-    for (let i = 0; i < coords.length; i++) {
-      const coordKey = axialToKey(coords[i].q, coords[i].r);
-      const tileKey = tileKeys[i];
-      const number = (tileKey === "desert") ? null : nums[numIdx++];
-
-      // Use the SAME constraint check as main loop
-      if (violatesConstraintsAtPlacement({coordKey, tileKey, number}, placed, neighMap, options, allPlaced)) {
-        ok = false;
-        break;
-      }
-
-      const entry = { tileKey, number };
-      placed.set(coordKey, entry);
-      allPlaced.push({ coordKey, tileKey, number });
-    }
-
-    if (ok) {
-      return coords.map((c, i) => {
-        const p = placed.get(axialToKey(c.q, c.r));
-        return { ...c, key: p.tileKey, number: p.number };
-      });
-    }
-  }
-
-  // Last resort: completely random (this should rarely happen)
-  console.warn("Could not generate board with all constraints - using random generation");
-  const lastResortRng = seededRng(seedStr + "|lastresort");
-  const tileKeys = shuffleInPlace(defaultTileBag().slice(), lastResortRng);
-  const nums = shuffleInPlace(defaultNumberBag().slice(), lastResortRng);
-  let numIdx = 0;
-  return coords.map((c, i) => ({
-    ...c,
-    key: tileKeys[i],
-    number: tileKeys[i] === "desert" ? null :  nums[numIdx++],
-  }));
+// Board generation — delegated to the backtracking core in
+// generator-core.js (loaded before this file). Every board satisfies
+// every enabled rule by construction; the old shuffle-retry strategy and
+// its rule-free "last resort" fallback are gone.
+function generateBoardWithRules(seedStr, options) {
+  return window.CatanGen.generate(seedStr, options);
 }
 
 // --- Hex geometry (pointy top) ---

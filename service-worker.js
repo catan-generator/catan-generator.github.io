@@ -1,9 +1,10 @@
 // Service Worker for Catan Map Generator PWA
-const CACHE_NAME = 'catan-gen-v1.0';
+const CACHE_NAME = 'catan-gen-v2.0';
 const urlsToCache = [
   '/',
   '/index.html',
   '/app.js',
+  '/generator-core.js',
   '/style.css',
   '/assets/brick.svg',
   '/assets/desert.svg',
