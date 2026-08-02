@@ -108,11 +108,11 @@ function buildNeighborMap(coords) {
 // --- Options / rules ---
 function readOptions() {
   return {
-    redCanTouch: document.getElementById("optRedTouch").checked,
-    twoTwelveCanTouch: document.getElementById("optTwoTwelveTouch").checked,
-    sameNumbersCanTouch: document.getElementById("optSameNumbersTouch").checked,
-    sameResourceCanTouch: document.getElementById("optSameResourceTouch").checked,
-    sameResourceSameNumber:  document.getElementById("optSameResourceSameNumber").checked,
+    redCanTouch: !document.getElementById("optRedTouch").checked,        // Inverted: checked = cannot touch
+    twoTwelveCanTouch: !document.getElementById("optTwoTwelveTouch").checked,
+    sameNumbersCanTouch: !document.getElementById("optSameNumbersTouch").checked,
+    sameResourceCanTouch: !document.getElementById("optSameResourceTouch").checked,
+    sameResourceSameNumber: !document.getElementById("optSameResourceSameNumber").checked,
   };
 }
 
@@ -124,11 +124,11 @@ function applyPreset(preset) {
   const sameResSameNum = document.getElementById("optSameResourceSameNumber");
 
   if (preset === "classic") {
-    red.checked = false;
-    two12.checked = true;
-    sameNum.checked = true;
-    sameRes.checked = false;
-    sameResSameNum.checked = false;
+    red.checked = true;         // Checked = 6 & 8 CANNOT touch
+    two12.checked = true;       // Checked = 2 & 12 CANNOT touch
+    sameNum.checked = true;     // Checked = Same numbers CANNOT touch
+    sameRes.checked = true;     // Checked = Same resources CANNOT touch
+    sameResSameNum.checked = true;
   }
 }
 
@@ -136,30 +136,35 @@ function applyPreset(preset) {
 function violatesConstraintsAtPlacement({coordKey, tileKey, number}, placed, neighMap, options, allPlaced) {
   const neighs = neighMap.get(coordKey) || [];
 
+  // Check neighbor constraints
   for (const nk of neighs) {
     const p = placed.get(nk);
     if (!p) continue;
 
+    // Same resource cannot touch
     if (! options.sameResourceCanTouch) {
-      if (p.tileKey === tileKey) return true;
+      if (p.tileKey === tileKey) {
+        // console.log(`Blocked: ${tileKey} cannot touch ${p.tileKey}`);
+        return true;
+      }
     }
 
     if (number != null && p.number != null) {
       const isRed = (n) => n === 6 || n === 8;
 
-      // Red numbers (6 and 8) can never touch each other, even if they're different
+      // Red numbers (6 and 8) can never touch each other
       if (isRed(p.number) && isRed(number)) {
         if (!options.redCanTouch) {
           return true;
         }
       }
 
-      // Check if same numbers can touch (but red numbers already checked above)
+      // Check if same numbers can touch
       if (!options.sameNumbersCanTouch) {
         if (p.number === number) return true;
       }
 
-
+      // 2 and 12 cannot touch
       if (!options.twoTwelveCanTouch) {
         const isTwoTwelvePair =
           (p.number === 2 && number === 12) || (p.number === 12 && number === 2);
@@ -168,9 +173,12 @@ function violatesConstraintsAtPlacement({coordKey, tileKey, number}, placed, nei
     }
   }
 
+  // Check global constraint: same resource cannot have same number anywhere on board
   if (! options.sameResourceSameNumber && number != null && tileKey !== "desert") {
-    for (const other of allPlaced) {
-      if (other.tileKey === tileKey && other.number === number) {
+    // Check all already placed tiles (in the placed Map, not allPlaced array)
+    for (const [key, tile] of placed.entries()) {
+      if (key === coordKey) continue; // Skip current position
+      if (tile.tileKey === tileKey && tile.number === number) {
         return true;
       }
     }
@@ -180,7 +188,7 @@ function violatesConstraintsAtPlacement({coordKey, tileKey, number}, placed, nei
 }
 
 // Assign tiles + numbers with constraints by retrying shuffles
-function generateBoardWithRules(seedStr, options, maxAttempts = 100000) {
+function generateBoardWithRules(seedStr, options, maxAttempts = 200000) {
   const rng = seededRng(seedStr);
   const coords = baseAxialCoords();
   const neighMap = buildNeighborMap(coords);
@@ -219,10 +227,10 @@ function generateBoardWithRules(seedStr, options, maxAttempts = 100000) {
     }
   }
 
-  // Fallback: try to respect at least red numbers rule
+  // Fallback: use same constraint check but with more attempts
   const fallbackRng = seededRng(seedStr + "|fallback");
 
-  for (let fallbackAttempt = 0; fallbackAttempt < 10000; fallbackAttempt++) {
+  for (let fallbackAttempt = 0; fallbackAttempt < 50000; fallbackAttempt++) {
     const tileKeys = shuffleInPlace(defaultTileBag().slice(), fallbackRng);
     const nums = shuffleInPlace(defaultNumberBag().slice(), fallbackRng);
 
@@ -236,24 +244,10 @@ function generateBoardWithRules(seedStr, options, maxAttempts = 100000) {
       const tileKey = tileKeys[i];
       const number = (tileKey === "desert") ? null : nums[numIdx++];
 
-      // At least check red numbers constraint in fallback
-      if (!options.redCanTouch && number != null) {
-        const neighs = neighMap.get(coordKey) || [];
-        let redViolation = false;
-        for (const nk of neighs) {
-          const p = placed.get(nk);
-          if (p && p.number != null) {
-            const isRed = (n) => n === 6 || n === 8;
-            if (isRed(p.number) && isRed(number)) {
-              redViolation = true;
-              break;
-            }
-          }
-        }
-        if (redViolation) {
-          ok = false;
-          break;
-        }
+      // Use the SAME constraint check as main loop
+      if (violatesConstraintsAtPlacement({coordKey, tileKey, number}, placed, neighMap, options, allPlaced)) {
+        ok = false;
+        break;
       }
 
       const entry = { tileKey, number };
@@ -269,8 +263,8 @@ function generateBoardWithRules(seedStr, options, maxAttempts = 100000) {
     }
   }
 
-  // Last resort: completely random
-  console.info("Using random board generation (some constraints may not be satisfied)");
+  // Last resort: completely random (this should rarely happen)
+  console.warn("Could not generate board with all constraints - using random generation");
   const lastResortRng = seededRng(seedStr + "|lastresort");
   const tileKeys = shuffleInPlace(defaultTileBag().slice(), lastResortRng);
   const nums = shuffleInPlace(defaultNumberBag().slice(), lastResortRng);
@@ -311,6 +305,67 @@ const optTwoTwelveTouch = document.getElementById("optTwoTwelveTouch");
 const optSameNumbersTouch = document.getElementById("optSameNumbersTouch");
 const optSameResourceTouch = document.getElementById("optSameResourceTouch");
 const optSameResourceSameNumber = document.getElementById("optSameResourceSameNumber");
+const langSelect = document.getElementById("langSelect");
+
+// --- Language System ---
+const translations = {
+  en: {
+    seed: "Seed",
+    newMap: "New Map",
+    randomSeed: "Random Seed",
+    showNumbers: "Show Numbers",
+    options: "Options",
+    preset: "Preset",
+    opt68: "6 & 8 Cannot Touch",
+    opt212: "2 & 12 Cannot Touch",
+    optSameNum: "Same Numbers Cannot Touch",
+    optSameRes: "Same Resources Cannot Touch",
+    optSameResSameNum: "Same Resource Cannot Have Same Number",
+    classicDesc: "Original Catan rules - red numbers (6 & 8), extreme numbers (2 & 12), same numbers, and same resources cannot be adjacent. Recommended for balanced maps.",
+    customDesc: "Manually control all rules. Automatically switches to Custom mode when any setting changes.",
+    legend: "Legend"
+  },
+  tr: {
+    seed: "Seed",
+    newMap: "Yeni Harita",
+    randomSeed: "Rastgele Seed",
+    showNumbers: "Numaraları Göster",
+    options: "Seçenekler",
+    preset: "Preset",
+    opt68: "6 ve 8 Yan Yana Gelemez",
+    opt212: "2 ve 12 Yan Yana Gelemez",
+    optSameNum: "Aynı Sayılar Yan Yana Gelemez",
+    optSameRes: "Aynı Kaynaklar Yan Yana Gelemez",
+    optSameResSameNum: "Aynı Kaynak Aynı Sayıya Sahip Olamaz",
+    classicDesc: "Orijinal Catan kuralları - kırmızı sayılar (6 ve 8), uç sayılar (2 ve 12), aynı sayılar ve aynı kaynaklar yan yana gelemez. Dengeli haritalar için önerilir.",
+    customDesc: "Tüm kuralları manuel kontrol et. Herhangi bir ayar değiştiğinde otomatik Custom moduna geçer.",
+    legend: "Açıklama"
+  }
+};
+
+function setLanguage(lang) {
+  document.querySelectorAll('[data-lang]').forEach(el => {
+    const key = el.getAttribute('data-lang');
+    if (translations[lang] && translations[lang][key]) {
+      el.textContent = translations[lang][key];
+    }
+  });
+
+  // Update placeholder
+  const placeholder = lang === 'tr' ? 'örn: 12345 veya merhaba' : 'e.g. 12345 or hello';
+  seedInput.placeholder = placeholder;
+
+  localStorage.setItem('catanLang', lang);
+}
+
+// Load saved language
+const savedLang = localStorage.getItem('catanLang') || 'en';
+langSelect.value = savedLang;
+setLanguage(savedLang);
+
+langSelect.addEventListener('change', (e) => {
+  setLanguage(e.target.value);
+});
 
 function clearSvg(svg) {
   while (svg.firstChild) svg.removeChild(svg.firstChild);
@@ -435,6 +490,7 @@ function regenerate() {
   try {
     const seedStr = currentSeed();
     const options = readOptions();
+    console.log('Options:', options);
     const state = generateBoardWithRules(seedStr, options);
     draw(state);
 

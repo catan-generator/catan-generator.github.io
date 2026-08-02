@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Catan - Mobile Test</title>
+  <style>
+    :root{
+      --bg: #1a202c;
+      --panel: #2d3748;
+      --surface: #4a5568;
+      --text: #f7fafc;
+      --muted: #a0aec0;
+      --accent: #4299e1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #2d3748 0%, #1a202c 50%, #2d3748 100%);
+      min-height: 100vh;
+      color: var(--text);
+      padding: 10px;
+      overflow-x: hidden;
+    }
+
+    .test-container {
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 15px;
+    }
+
+    .test-box {
+      background: linear-gradient(135deg, rgba(74,85,104,0.4) 0%, rgba(45,55,72,0.5) 100%);
+      border: 1px solid rgba(160,174,192,0.2);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      padding: 20px 15px;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    h1 {
+      color: var(--accent);
+      margin-bottom: 10px;
+      font-size: clamp(20px, 6vw, 28px);
+      font-weight: 700;
+    }
+
+    h2 {
+      color: var(--accent);
+      margin: 15px 0 10px;
+      font-size: clamp(16px, 4.5vw, 22px);
+      font-weight: 600;
+    }
+
+    p {
+      color: var(--text);
+      margin: 10px 0;
+      font-size: clamp(13px, 3.8vw, 16px);
+      line-height: 1.5;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: clamp(12px, 3.5vw, 14px);
+      margin: 5px;
+    }
+
+    .status.good {
+      background: rgba(72,187,120,0.2);
+      color: #68d391;
+      border: 1px solid #68d391;
+    }
+
+    .status.info {
+      background: rgba(66,153,225,0.2);
+      color: #4299e1;
+      border: 1px solid #4299e1;
+    }
+
+    .button {
+      display: inline-block;
+      width: calc(100% - 10px);
+      max-width: 300px;
+      padding: 14px 20px;
+      margin: 8px 5px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+      color: white;
+      font-weight: 600;
+      font-size: clamp(13px, 3.5vw, 15px);
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 14px rgba(66,153,225,0.4);
+      text-transform: uppercase;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .button:active {
+      transform: scale(0.97);
+      box-shadow: 0 2px 8px rgba(66,153,225,0.3);
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin: 15px 0;
+      text-align: left;
+    }
+
+    .info-item {
+      background: rgba(74,85,104,0.3);
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(160,174,192,0.2);
+    }
+
+    .info-label {
+      color: var(--muted);
+      font-size: clamp(11px, 3vw, 13px);
+      margin-bottom: 4px;
+    }
+
+    .info-value {
+      color: var(--text);
+      font-size: clamp(13px, 3.5vw, 15px);
+      font-weight: 600;
+      word-break: break-all;
+    }
+
+    .color-strip {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      margin: 15px 0;
+      flex-wrap: wrap;
+    }
+
+    .color-box {
+      width: clamp(60px, 18vw, 90px);
+      height: clamp(60px, 18vw, 90px);
+      margin: 5px;
+      border-radius: 8px;
+      border: 2px solid rgba(160,174,192,0.3);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .bg-dark { background: #1a202c; }
+    .bg-panel { background: #2d3748; }
+    .bg-surface { background: #4a5568; }
+    .bg-accent { background: #4299e1; }
+
+    .label {
+      display: block;
+      color: var(--muted);
+      font-size: clamp(9px, 2.5vw, 11px);
+      margin-top: 3px;
+      line-height: 1.2;
+    }
+
+    .touch-test {
+      width: 100%;
+      max-width: 300px;
+      height: 60px;
+      margin: 10px auto;
+      background: rgba(66,153,225,0.2);
+      border: 2px dashed #4299e1;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(12px, 3.5vw, 14px);
+      color: var(--accent);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .touch-test:active {
+      background: rgba(66,153,225,0.4);
+      border-style: solid;
+    }
+
+    @media (min-width: 600px) {
+      .test-container {
+        max-width: 600px;
+      }
+
+      .button {
+        width: auto;
+        min-width: 200px;
+      }
+
+      .info-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <div class="test-box">
+      <h1>📱 Mobile Test</h1>
+      <p>Bu sayfa mobil uyumluluğu test eder</p>
+
+      <div class="status good" id="themeStatus">✓ Theme Loaded</div>
+    </div>
+
+    <div class="test-box">
+      <h2>Cihaz Bilgileri</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">Ekran Genişliği</div>
+          <div class="info-value" id="screenWidth">-</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Ekran Yüksekliği</div>
+          <div class="info-value" id="screenHeight">-</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Viewport Genişliği</div>
+          <div class="info-value" id="viewportWidth">-</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">User Agent</div>
+          <div class="info-value" id="userAgent">-</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Touch Support</div>
+          <div class="info-value" id="touchSupport">-</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Orientation</div>
+          <div class="info-value" id="orientation">-</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-box">
+      <h2>Renk Testi</h2>
+      <p>Modern koyu tema renkleri:</p>
+      <div class="color-strip">
+        <div style="text-align: center;">
+          <div class="color-box bg-dark"></div>
+          <span class="label">Dark<br>#1a202c</span>
+        </div>
+        <div style="text-align: center;">
+          <div class="color-box bg-panel"></div>
+          <span class="label">Panel<br>#2d3748</span>
+        </div>
+        <div style="text-align: center;">
+          <div class="color-box bg-surface"></div>
+          <span class="label">Surface<br>#4a5568</span>
+        </div>
+        <div style="text-align: center;">
+          <div class="color-box bg-accent"></div>
+          <span class="label">Accent<br>#4299e1</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-box">
+      <h2>Touch Test</h2>
+      <div class="touch-test" id="touchArea">
+        Buraya dokun / tıkla
+      </div>
+      <p id="touchCount" style="color: var(--accent); font-weight: 600;">Dokunma sayısı: 0</p>
+    </div>
+
+    <div class="test-box">
+      <a href="index.html" class="button">🏝️ Ana Uygulamaya Git</a>
+      <a href="cache-test.html" class="button" style="background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%);">🎨 Cache Test</a>
+    </div>
+  </div>
+
+  <script>
+    // Device info
+    function updateDeviceInfo() {
+      document.getElementById('screenWidth').textContent = screen.width + 'px';
+      document.getElementById('screenHeight').textContent = screen.height + 'px';
+      document.getElementById('viewportWidth').textContent = window.innerWidth + 'px';
+      document.getElementById('userAgent').textContent = navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop';
+      document.getElementById('touchSupport').textContent = ('ontouchstart' in window) ? '✓ Yes' : '✗ No';
+
+      const orientation = window.innerWidth > window.innerHeight ? 'Landscape 🌅' : 'Portrait 📱';
+      document.getElementById('orientation').textContent = orientation;
+    }
+
+    updateDeviceInfo();
+    window.addEventListener('resize', updateDeviceInfo);
+    window.addEventListener('orientationchange', updateDeviceInfo);
+
+    // Touch test
+    let touchCount = 0;
+    const touchArea = document.getElementById('touchArea');
+    const touchCountEl = document.getElementById('touchCount');
+
+    function incrementTouch() {
+      touchCount++;
+      touchCountEl.textContent = `Dokunma sayısı: ${touchCount}`;
+      touchArea.textContent = '✓ Çalışıyor!';
+
+      setTimeout(() => {
+        touchArea.textContent = 'Tekrar dokun';
+      }, 500);
+    }
+
+    touchArea.addEventListener('click', incrementTouch);
+    touchArea.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      incrementTouch();
+    });
+
+    // Theme check
+    const bgColor = getComputedStyle(document.body).background;
+    if (bgColor.includes('#2d3748') || bgColor.includes('45, 55, 72')) {
+      document.getElementById('themeStatus').textContent = '✓ Modern Tema Aktif';
+    }
+
+    console.log('Mobile test page loaded');
+    console.log('Screen:', screen.width, 'x', screen.height);
+    console.log('Viewport:', window.innerWidth, 'x', window.innerHeight);
+  </script>
+</body>
+</html>
+

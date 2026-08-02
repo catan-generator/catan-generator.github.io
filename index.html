@@ -6,8 +6,19 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
+
+  <!-- PWA Support -->
+  <meta name="theme-color" content="#2d3748" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Catan Gen" />
+  <meta name="description" content="Catan oyunu için rastgele harita oluşturucu" />
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+
   <title>Catan Map Generator</title>
-  <link rel="stylesheet" href="style.css?v=9.0" />
+  <link rel="stylesheet" href="style.css?v=15.0" />
 </head>
 <body>
   <header class="topbar">
@@ -15,17 +26,22 @@
 
     <div class="controls">
       <label>
-        Seed
-        <input id="seedInput" type="text" placeholder="örn: 12345 veya merhaba" />
+        <span data-lang="seed">Seed</span>
+        <input id="seedInput" type="text" placeholder="e.g. 12345 or hello" data-placeholder-tr="örn: 12345 veya merhaba" data-placeholder-en="e.g. 12345 or hello" />
       </label>
 
-      <button id="generateBtn">Yeni Harita</button>
-      <button id="randomSeedBtn" class="secondary">Rastgele Seed</button>
+      <button id="generateBtn" data-lang="newMap">New Map</button>
+      <button id="randomSeedBtn" class="secondary" data-lang="randomSeed">Random Seed</button>
 
       <label class="checkbox">
         <input id="showNumbers" type="checkbox" checked />
-        Numaraları göster
+        <span data-lang="showNumbers">Show Numbers</span>
       </label>
+
+      <select id="langSelect" style="margin-left: 10px; padding: 8px; border-radius: 6px; border: 1px solid rgba(160,174,192,0.3); background: rgba(74,85,104,0.4); color: #f7fafc;">
+        <option value="en">EN</option>
+        <option value="tr">TR</option>
+      </select>
     </div>
   </header>
 
@@ -36,56 +52,71 @@
 
     <aside class="sidebar">
       <section class="panel">
-        <h3>Options</h3>
+        <h3 data-lang="options">Options</h3>
 
         <label class="selectRow">
-          Preset
+          <span data-lang="preset">Preset</span>
           <select id="presetSelect">
-            <option value="classic" selected>Classic</option>
+            <option value="classic">Classic</option>
             <option value="custom">Custom</option>
           </select>
         </label>
 
         <div class="optList">
           <label class="checkbox">
-            <input id="optRedTouch" type="checkbox" />
-            6 &amp; 8 Can Touch
+            <input id="optRedTouch" type="checkbox" checked />
+            <span data-lang="opt68">6 & 8 Cannot Touch</span>
           </label>
 
           <label class="checkbox">
             <input id="optTwoTwelveTouch" type="checkbox" checked />
-            2 &amp; 12 Can Touch
+            <span data-lang="opt212">2 & 12 Cannot Touch</span>
           </label>
 
           <label class="checkbox">
             <input id="optSameNumbersTouch" type="checkbox" checked />
-            Same Numbers Can Touch
+            <span data-lang="optSameNum">Same Numbers Cannot Touch</span>
           </label>
 
           <label class="checkbox">
-            <input id="optSameResourceTouch" type="checkbox" />
-            Same Resource Can Touch
+            <input id="optSameResourceTouch" type="checkbox" checked />
+            <span data-lang="optSameRes">Same Resources Cannot Touch</span>
           </label>
 
           <label class="checkbox">
-            <input id="optSameResourceSameNumber" type="checkbox" />
-            Same Resource Can Have Same Number
+            <input id="optSameResourceSameNumber" type="checkbox" checked />
+            <span data-lang="optSameResSameNum">Same Resource Cannot Have Same Number</span>
           </label>
         </div>
 
         <p class="hint">
-          <strong>Classic:</strong> Orijinal Catan kuralları - kırmızı sayılar (6 ve 8) ve aynı kaynaklar yan yana gelemez. Dengeli haritalar için önerilir.<br>
-          <strong>Custom:</strong> Tüm kuralları manuel kontrol et. Herhangi bir ayar değiştiğinde otomatik Custom moduna geçer.
+          <strong>Classic:</strong> <span data-lang="classicDesc">Original Catan rules - red numbers (6 & 8), extreme numbers (2 & 12), same numbers, and same resources cannot be adjacent. Recommended for balanced maps.</span><br>
+          <strong>Custom:</strong> <span data-lang="customDesc">Manually control all rules. Automatically switches to Custom mode when any setting changes.</span>
         </p>
       </section>
 
       <section class="panel">
-        <h3>Legend</h3>
+        <h3 data-lang="legend">Legend</h3>
         <div class="legendGrid" id="legend"></div>
       </section>
     </aside>
   </main>
 
-  <script src="app.js?v=9.0"></script>
+  <script src="app.js?v=15.0"></script>
+
+  <!-- PWA Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then((registration) => {
+            console.log('✓ PWA: Service Worker registered', registration.scope);
+          })
+          .catch((error) => {
+            console.log('✗ PWA: Service Worker registration failed', error);
+          });
+      });
+    }
+  </script>
 </body>
 </html>
