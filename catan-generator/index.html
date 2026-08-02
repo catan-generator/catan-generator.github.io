@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>Catan Map Generator</title>
+  <link rel="stylesheet" href="style.css?v=5.0" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Catan Map Generator</div>
+
+    <div class="controls">
+      <label>
+        Seed
+        <input id="seedInput" type="text" placeholder="örn: 12345 veya merhaba" />
+      </label>
+
+      <button id="generateBtn">Generate</button>
+      <button id="randomSeedBtn" class="secondary">Random seed</button>
+
+      <label class="checkbox">
+        <input id="showNumbers" type="checkbox" checked />
+        Numaraları göster
+      </label>
+    </div>
+  </header>
+
+  <main>
+    <div class="canvasWrap">
+      <svg id="board" viewBox="0 0 1100 880" preserveAspectRatio="xMidYMid meet" aria-label="Catan board"></svg>
+    </div>
+
+    <aside class="sidebar">
+      <section class="panel">
+        <h3>Options</h3>
+
+        <label class="selectRow">
+          Preset
+          <select id="presetSelect">
+            <option value="classic" selected>Classic</option>
+            <option value="custom">Custom</option>
+          </select>
+        </label>
+
+        <div class="optList">
+          <label class="checkbox">
+            <input id="optRedTouch" type="checkbox" />
+            6 &amp; 8 Can Touch
+          </label>
+
+          <label class="checkbox">
+            <input id="optTwoTwelveTouch" type="checkbox" checked />
+            2 &amp; 12 Can Touch
+          </label>
+
+          <label class="checkbox">
+            <input id="optSameNumbersTouch" type="checkbox" checked />
+            Same Numbers Can Touch
+          </label>
+
+          <label class="checkbox">
+            <input id="optSameResourceTouch" type="checkbox" />
+            Same Resource Can Touch
+          </label>
+
+          <label class="checkbox">
+            <input id="optSameResourceSameNumber" type="checkbox" />
+            Same Resource Can Have Same Number
+          </label>
+        </div>
+
+        <p class="hint">
+          <strong>Classic:</strong> Orijinal Catan kuralları - kırmızı sayılar (6 ve 8) ve aynı kaynaklar yan yana gelemez. Dengeli haritalar için önerilir.<br>
+          <strong>Custom:</strong> Tüm kuralları manuel kontrol et. Herhangi bir ayar değiştiğinde otomatik Custom moduna geçer.
+        </p>
+      </section>
+
+      <section class="panel">
+        <h3>Legend</h3>
+        <div class="legendGrid" id="legend"></div>
+      </section>
+    </aside>
+  </main>
+
+  <script src="app.js?v=5.0"></script>
+</body>
+</html>
