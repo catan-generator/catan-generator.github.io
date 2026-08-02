@@ -242,7 +242,8 @@ const translations = {
     optSameResSameNum: "Same Resource Cannot Have Same Number",
     classicDesc: "Original Catan rules - red numbers (6 & 8), extreme numbers (2 & 12), same numbers, and same resources cannot be adjacent. Recommended for balanced maps.",
     customDesc: "Manually control all rules. Automatically switches to Custom mode when any setting changes.",
-    legend: "Legend"
+    legend: "Legend",
+    tagline: "Fair boards, every game night"
   },
   tr: {
     seed: "Seed",
@@ -258,7 +259,8 @@ const translations = {
     optSameResSameNum: "Aynı Kaynak Aynı Sayıya Sahip Olamaz",
     classicDesc: "Orijinal Catan kuralları - kırmızı sayılar (6 ve 8), uç sayılar (2 ve 12), aynı sayılar ve aynı kaynaklar yan yana gelemez. Dengeli haritalar için önerilir.",
     customDesc: "Tüm kuralları manuel kontrol et. Herhangi bir ayar değiştiğinde otomatik Custom moduna geçer.",
-    legend: "Açıklama"
+    legend: "Açıklama",
+    tagline: "Her oyun gecesine adil tahta"
   }
 };
 
