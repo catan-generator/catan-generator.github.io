@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://catan-generator.github.io/sitemap.xml

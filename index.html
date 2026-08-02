@@ -8,26 +8,48 @@
   <meta http-equiv="Expires" content="0" />
 
   <!-- PWA Support -->
-  <meta name="theme-color" content="#2d3748" />
+  <meta name="theme-color" content="#0C1118" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Catan Gen" />
-  <meta name="description" content="Catan oyunu için rastgele harita oluşturucu" />
-
-  <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="icon-192.png" />
-
-  <title>Catan Map Generator</title>
-  <link rel="stylesheet" href="style.css?v=17.0" />
+  <meta name="description" content="Free online Catan board generator. Create balanced, fair random maps in one click: 6 & 8 never touch, same resources spread out, shareable seeds. Works offline. Türkçe Catan harita oluşturucu." />
+  <meta name="keywords" content="catan board generator, catan map generator, balanced catan board, random catan map, catan setup, catan harita oluşturucu, catan dizilim" />
+  <link rel="canonical" href="https://catan-generator.github.io/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://catan-generator.github.io/" />
+  <meta property="og:title" content="Catan Board Generator — Balanced &amp; Fair Random Maps" />
+  <meta property="og:description" content="One-click balanced Catan boards: red numbers apart, resources spread, shareable seeds. Free, no ads, works offline." />
+  <meta property="og:image" content="https://catan-generator.github.io/icon-512.png" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:locale:alternate" content="tr_TR" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Catan Board Generator — Balanced &amp; Fair Random Maps" />
+  <meta name="twitter:description" content="One-click balanced Catan boards with provably correct placement rules. Free & offline-capable." />
+  <meta name="twitter:image" content="https://catan-generator.github.io/icon-512.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Catan Board Generator",
+    "url": "https://catan-generator.github.io/",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "description": "Free online board generator for Catan-style hex games. Generates balanced random maps where 6 and 8 never touch, identical resources are spread out, and every board is reproducible with a seed.",
+    "inLanguage": ["en", "tr"]
+  }
+  </script>
+  <title>Catan Board Generator — Balanced &amp; Fair Random Maps | Free Online</title>
+  <link rel="stylesheet" href="style.css?v=18.0" />
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
-      <img src="icon-192.png" alt="" />
-      <div>
+      <img src="icon-192.png" alt="Catan board generator logo" width="40" height="40" />
+      <h1>
         Catan Map Generator
         <small data-lang="tagline">Fair boards, every game night</small>
-      </div>
+      </h1>
     </div>
     <select id="langSelect">
       <option value="en">EN</option>
@@ -105,6 +127,23 @@
       </section>
     </aside>
   </main>
+
+
+  <section class="seo">
+    <div class="panel">
+      <h2 data-lang="aboutTitle">What is this Catan board generator?</h2>
+      <p data-lang="aboutBody">This free online tool creates <strong>balanced, fair random Catan boards</strong> for the base game (3–4 players). Unlike simply shuffling tiles, it uses a constraint-solving algorithm so that every generated map is guaranteed to follow the placement rules you choose — the red numbers 6 &amp; 8 are never adjacent, 2 &amp; 12 stay apart, identical numbers don't cluster, and the same resources are spread across the island. Every board has a <strong>seed</strong>: share it with friends and they can open the exact same map. The app is free, has no ads, and works offline as a PWA.</p>
+      <h2 data-lang="faqTitle">Frequently asked questions</h2>
+      <dl>
+        <dt data-lang="faq1q">Why should 6 and 8 not touch in Catan?</dt>
+        <dd data-lang="faq1a">6 and 8 are rolled most often. When two red numbers sit on adjacent hexes, one settlement spot becomes overwhelmingly strong and the game feels decided at setup. Keeping them apart is the most common house rule for a fair start.</dd>
+        <dt data-lang="faq2q">What makes a Catan board "balanced"?</dt>
+        <dd data-lang="faq2a">A balanced board spreads high-probability numbers and resource types evenly, so no starting corner dominates. This generator enforces that with hard rules instead of luck.</dd>
+        <dt data-lang="faq3q">Can I replay the same map?</dt>
+        <dd data-lang="faq3a">Yes — every map is generated from a seed shown in the toolbar. Enter the same seed with the same rules and you get an identical board on any device.</dd>
+      </dl>
+    </div>
+  </section>
 
   <script src="generator-core.js?v=17.0"></script>
   <script src="app.js?v=17.0"></script>

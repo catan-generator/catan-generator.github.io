@@ -243,7 +243,16 @@ const translations = {
     classicDesc: "Original Catan rules - red numbers (6 & 8), extreme numbers (2 & 12), same numbers, and same resources cannot be adjacent. Recommended for balanced maps.",
     customDesc: "Manually control all rules. Automatically switches to Custom mode when any setting changes.",
     legend: "Legend",
-    tagline: "Fair boards, every game night"
+    tagline: "Fair boards, every game night",
+    aboutTitle: "What is this Catan board generator?",
+    aboutBody: "This free online tool creates balanced, fair random Catan boards for the base game (3\u20134 players). A constraint-solving algorithm guarantees the placement rules you choose: 6 & 8 never adjacent, 2 & 12 apart, same numbers and same resources spread out. Share the seed to replay any map. Free, no ads, works offline.",
+    faqTitle: "Frequently asked questions",
+    faq1q: "Why should 6 and 8 not touch in Catan?",
+    faq1a: "6 and 8 are rolled most often. Adjacent red numbers make one settlement spot overwhelmingly strong, so keeping them apart is the most common fairness rule.",
+    faq2q: "What makes a Catan board \"balanced\"?",
+    faq2a: "High-probability numbers and resource types are spread evenly so no starting corner dominates. This generator enforces that with hard rules instead of luck.",
+    faq3q: "Can I replay the same map?",
+    faq3a: "Yes \u2014 every map comes from a seed. Same seed + same rules = identical board on any device."
   },
   tr: {
     seed: "Seed",
@@ -260,7 +269,16 @@ const translations = {
     classicDesc: "Orijinal Catan kuralları - kırmızı sayılar (6 ve 8), uç sayılar (2 ve 12), aynı sayılar ve aynı kaynaklar yan yana gelemez. Dengeli haritalar için önerilir.",
     customDesc: "Tüm kuralları manuel kontrol et. Herhangi bir ayar değiştiğinde otomatik Custom moduna geçer.",
     legend: "Açıklama",
-    tagline: "Her oyun gecesine adil tahta"
+    tagline: "Her oyun gecesine adil tahta",
+    aboutTitle: "Bu Catan harita oluşturucu nedir?",
+    aboutBody: "Bu ücretsiz araç, temel oyun (3\u20134 oyuncu) için dengeli ve adil rastgele Catan tahtaları üretir. Kısıt çözücü algoritma seçtiğiniz kuralları garanti eder: 6 ve 8 asla yan yana gelmez, 2 ve 12 ayrık kalır, aynı sayılar ve aynı kaynaklar dağıtılır. Seed'i paylaşarak aynı haritayı tekrar açabilirsiniz. Ücretsiz, reklamsız, çevrimdışı çalışır.",
+    faqTitle: "Sık sorulan sorular",
+    faq1q: "Catan'da 6 ve 8 neden yan yana gelmemeli?",
+    faq1a: "6 ve 8 en sık atılan sayılardır. Yan yana geldiklerinde tek bir yerleşim noktası aşırı güçlenir; bu yüzden ayrı tutmak en yaygın adalet kuralıdır.",
+    faq2q: "Dengeli Catan tahtası ne demek?",
+    faq2a: "Yüksek olasılıklı sayılar ve kaynak türleri eşit dağılır, hiçbir başlangıç köşesi baskın olmaz. Bu araç bunu şansa değil kurallara bağlar.",
+    faq3q: "Aynı haritayı tekrar açabilir miyim?",
+    faq3a: "Evet \u2014 her harita bir seed'den üretilir. Aynı seed + aynı kurallar = her cihazda birebir aynı tahta."
   }
 };
 
