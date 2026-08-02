@@ -252,7 +252,9 @@ const translations = {
     faq2q: "What makes a Catan board \"balanced\"?",
     faq2a: "High-probability numbers and resource types are spread evenly so no starting corner dominates. This generator enforces that with hard rules instead of luck.",
     faq3q: "Can I replay the same map?",
-    faq3a: "Yes \u2014 every map comes from a seed. Same seed + same rules = identical board on any device."
+    faq3a: "Yes \u2014 every map comes from a seed. Same seed + same rules = identical board on any device.",
+    privacy: "Privacy Policy",
+    footerNote: "Free & open \u2014 no ads, no tracking"
   },
   tr: {
     seed: "Seed",
@@ -278,7 +280,9 @@ const translations = {
     faq2q: "Dengeli Catan tahtası ne demek?",
     faq2a: "Yüksek olasılıklı sayılar ve kaynak türleri eşit dağılır, hiçbir başlangıç köşesi baskın olmaz. Bu araç bunu şansa değil kurallara bağlar.",
     faq3q: "Aynı haritayı tekrar açabilir miyim?",
-    faq3a: "Evet \u2014 her harita bir seed'den üretilir. Aynı seed + aynı kurallar = her cihazda birebir aynı tahta."
+    faq3a: "Evet \u2014 her harita bir seed'den üretilir. Aynı seed + aynı kurallar = her cihazda birebir aynı tahta.",
+    privacy: "Gizlilik Politikası",
+    footerNote: "Ücretsiz \u2014 reklamsız, takipsiz"
   }
 };
 
