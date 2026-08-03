@@ -68,13 +68,17 @@
       <button id="randomSeedBtn" class="secondary" data-lang="randomSeed">Random Seed</button>
       <div class="spacer"></div>
       <label class="checkbox">
+        <input id="optAnimate" type="checkbox" checked />
+        <span data-lang="animateTiles">Animate Tiles</span>
+      </label>
+      <label class="checkbox">
         <input id="showNumbers" type="checkbox" checked />
         <span data-lang="showNumbers">Show Numbers</span>
       </label>
     </div>
 
     <div class="canvasWrap">
-      <svg id="board" viewBox="0 0 1100 880" preserveAspectRatio="xMidYMid meet" aria-label="Catan board"></svg>
+      <svg id="board" viewBox="0 0 1280 1060" preserveAspectRatio="xMidYMid meet" aria-label="Catan board"></svg>
     </div>
 
     <aside class="sidebar">
@@ -152,8 +156,8 @@
     <span data-lang="footerNote">Free &amp; open — no ads, no tracking</span>
   </footer>
 
-  <script src="generator-core.js?v=17.0"></script>
-  <script src="app.js?v=17.0"></script>
+  <script src="generator-core.js?v=19.0"></script>
+  <script src="app.js?v=19.0"></script>
 
   <!-- PWA Service Worker Registration -->
   <script>

@@ -83,6 +83,55 @@
     });
   }
 
+  // --- Harbors ---
+  // Edge k spans hex corners k and k+1 under the pointy-top corner
+  // convention corner(k) = angle 60k-90 (k=0 = top vertex). This EDGE_DIRS
+  // list is the axial offset of the neighbor across edge k — i.e. edge k
+  // is coastal iff cell + EDGE_DIRS[k] is not part of the board.
+  const EDGE_DIRS = [[1, -1], [1, 0], [0, 1], [-1, 1], [-1, 0], [0, -1]];
+  function hexCornerUnit(k) {
+    const a = (Math.PI / 180) * (60 * k - 90);
+    return { x: Math.cos(a), y: Math.sin(a) };
+  }
+  function axialToPixelUnit(q, r) {
+    return { x: Math.sqrt(3) * (q + r / 2), y: 1.5 * r };
+  }
+
+  /** Base-game harbor pool: 4 generic (3:1) + one 2:1 per resource. */
+  function harborPool() {
+    return ['generic', 'generic', 'generic', 'generic', 'wood', 'sheep', 'wheat', 'brick', 'ore'];
+  }
+
+  /** Coastal {cell, edge} slots, ordered clockwise from the top by angle. */
+  function coastalEdges(coords) {
+    const key = (q, r) => q + ',' + r;
+    const inSet = new Set(coords.map((c) => key(c.q, c.r)));
+    const centers = coords.map((c) => axialToPixelUnit(c.q, c.r));
+    const cx = centers.reduce((s, p) => s + p.x, 0) / centers.length;
+    const cy = centers.reduce((s, p) => s + p.y, 0) / centers.length;
+
+    const edges = [];
+    coords.forEach((cell, i) => {
+      EDGE_DIRS.forEach((d, edge) => {
+        if (inSet.has(key(cell.q + d[0], cell.r + d[1]))) return;
+        const c = centers[i];
+        const a = hexCornerUnit(edge);
+        const b = hexCornerUnit(edge + 1);
+        const mx = c.x + (a.x + b.x) / 2;
+        const my = c.y + (a.y + b.y) / 2;
+        const angle = (Math.atan2(mx - cx, -(my - cy)) + 2 * Math.PI) % (2 * Math.PI);
+        edges.push({ cell: i, edge, angle });
+      });
+    });
+    edges.sort((p, q2) => p.angle - q2.angle);
+    return edges.map((e) => ({ cell: e.cell, edge: e.edge }));
+  }
+
+  /** Evenly spaced anchors along the coast, like the physical frame. */
+  function pickHarborSlots(coastal, count) {
+    return Array.from({ length: count }, (_, i) => coastal[Math.floor((i * coastal.length) / count)]);
+  }
+
   const isRed = (n) => n === 6 || n === 8;
   const isLow = (n) => n === 2 || n === 12;
 
@@ -160,11 +209,18 @@
       }, 20000);
       if (!numbers) continue;
 
-      return coords.map((c, i) => ({
+      const tiles = coords.map((c, i) => ({
         q: c.q, r: c.r,
         key: resources.get(i),
         number: resources.get(i) === 'desert' ? null : numbers.get(i),
       }));
+      // Harbor types are shuffled with the SAME rng continuing from the
+      // tile/number placement, so a seed reproduces harbors too.
+      const slots = pickHarborSlots(coastalEdges(coords), harborPool().length);
+      const types = shuffle(harborPool(), rng);
+      const harbors = slots.map((slot, i) => ({ cell: slot.cell, edge: slot.edge, type: types[i] }));
+
+      return { tiles, harbors };
     }
     // Provably unreachable in practice (see tests); still: never return a
     // rule-breaking board.
@@ -172,7 +228,8 @@
   }
 
   /** Independent re-check used by tests: returns a list of violations. */
-  function validate(state, options) {
+  function validate(board, options) {
+    const state = board.tiles;
     const coords = coordsList();
     const adj = adjacencyList(coords);
     const bad = [];
@@ -196,10 +253,20 @@
         seen.add(k);
       }
     }
+
+    const expectedSlots = pickHarborSlots(coastalEdges(coords), harborPool().length);
+    const norm = (arr) => arr.map((s) => s.cell + ':' + s.edge).sort().join(',');
+    if (norm(board.harbors) !== norm(expectedSlots)) bad.push('harbor slots mismatch');
+    const pool = (arr) => arr.map((h) => h.type).sort().join(',');
+    if (pool(board.harbors) !== harborPool().slice().sort().join(',')) bad.push('harbor pool mismatch');
+
     return bad;
   }
 
-  const api = { generate, validate, coordsList, tileBag, numberBag, seededRng };
+  const api = {
+    generate, validate, coordsList, tileBag, numberBag, seededRng,
+    harborPool, coastalEdges, pickHarborSlots, hexCornerUnit, EDGE_DIRS,
+  };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.CatanGen = api;
 })(typeof window !== 'undefined' ? window : globalThis);

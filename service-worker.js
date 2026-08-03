@@ -1,5 +1,5 @@
 // Service Worker for Catan Map Generator PWA
-const CACHE_NAME = 'catan-gen-v2.1';
+const CACHE_NAME = 'catan-gen-v3.0';
 const urlsToCache = [
   '/',
   '/index.html',

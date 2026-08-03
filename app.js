@@ -216,7 +216,14 @@ const seedInput = document.getElementById("seedInput");
 const generateBtn = document.getElementById("generateBtn");
 const randomSeedBtn = document.getElementById("randomSeedBtn");
 const showNumbersEl = document.getElementById("showNumbers");
+const animateEl = document.getElementById("optAnimate");
 const legend = document.getElementById("legend");
+
+// Persisted "animate tiles" preference; off by default for anyone who
+// has motion reduced at the OS level, regardless of the checkbox.
+animateEl.checked = localStorage.getItem('catanAnimate') !== '0';
+const prefersReducedMotion =
+  window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const presetSelect = document.getElementById("presetSelect");
 const optRedTouch = document.getElementById("optRedTouch");
@@ -232,6 +239,7 @@ const translations = {
     seed: "Seed",
     newMap: "New Map",
     randomSeed: "Random Seed",
+    animateTiles: "Animate Tiles",
     showNumbers: "Show Numbers",
     options: "Options",
     preset: "Preset",
@@ -260,6 +268,7 @@ const translations = {
     seed: "Seed",
     newMap: "Yeni Harita",
     randomSeed: "Rastgele Seed",
+    animateTiles: "Karoları Canlandır",
     showNumbers: "Numaraları Göster",
     options: "Seçenekler",
     preset: "Preset",
@@ -336,6 +345,79 @@ function renderLegend() {
 }
 
 
+// Harbors render as wooden dock platforms protruding from the coastal
+// edge — flush base (hidden under the land tile painted after it),
+// planked top, mooring posts, and a cream ratio badge. Geometry mirrors
+// the mobile app's HarborLayer. Drawn BEFORE the land tiles so each
+// tile's opaque polygon covers the pier's near-edge overlap seamlessly.
+function drawHarbors(state, size, origin, animate, baseDelay) {
+  const PIER_TOP = "#A9744A", PIER_SIDE = "#6B4527", PLANK_GAP = "rgba(38,22,10,0.55)";
+  const POST = "#5A3A1F", BADGE_BG = "#F4E8D0", BADGE_TEXT = "#3E2E1C";
+
+  for (const h of state.harbors) {
+    const { x: cx, y: cy } = axialToPixel(state.tiles[h.cell], size, origin);
+    const a = CatanGen.hexCornerUnit(h.edge);
+    const b = CatanGen.hexCornerUnit(h.edge + 1);
+    const ax = cx + a.x * size * 0.94, ay = cy + a.y * size * 0.94;
+    const bx = cx + b.x * size * 0.94, by = cy + b.y * size * 0.94;
+    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    const ml = Math.hypot(mx, my);
+    const nx = mx / ml, ny = my / ml;
+    let tx = bx - ax, ty = by - ay;
+    const tl = Math.hypot(tx, ty);
+    tx /= tl; ty /= tl;
+    const outDist = ml * size + size * 0.68;
+    const ox = cx + nx * outDist, oy = cy + ny * outDist;
+    const halfOuter = tl * 0.36;
+    const depth = size * 0.1;
+    const oxA = ox + tx * halfOuter, oyA = oy + ty * halfOuter;
+    const oxB = ox - tx * halfOuter, oyB = oy - ty * halfOuter;
+
+    const g = svgEl("g");
+    g.appendChild(svgEl("polygon", {
+      points: `${ax},${ay + depth} ${bx},${by + depth} ${oxA},${oyA + depth} ${oxB},${oyB + depth}`,
+      fill: PIER_SIDE,
+    }));
+    g.appendChild(svgEl("polygon", {
+      points: `${ax},${ay} ${bx},${by} ${oxA},${oyA} ${oxB},${oyB}`,
+      fill: PIER_TOP,
+    }));
+    [0.22, 0.42, 0.62, 0.82].forEach((f) => {
+      g.appendChild(svgEl("line", {
+        x1: bx + (oxA - bx) * f, y1: by + (oyA - by) * f,
+        x2: ax + (oxB - ax) * f, y2: ay + (oyB - ay) * f,
+        stroke: PLANK_GAP, "stroke-width": size * 0.035, "stroke-linecap": "round",
+      }));
+    });
+    [[oxA - tx * size * 0.05, oyA - ty * size * 0.05], [oxB + tx * size * 0.05, oyB + ty * size * 0.05]]
+      .forEach(([px, py]) => g.appendChild(svgEl("circle", { cx: px, cy: py, r: size * 0.075, fill: POST })));
+
+    const ccx = cx + nx * (ml * size + size * 0.34);
+    const ccy = cy + ny * (ml * size + size * 0.34);
+    const badgeR = size * 0.26;
+    g.appendChild(svgEl("circle", {
+      cx: ccx, cy: ccy, r: badgeR, fill: BADGE_BG, stroke: PIER_SIDE, "stroke-width": size * 0.024,
+    }));
+    if (h.type !== "generic") {
+      g.appendChild(svgEl("circle", { cx: ccx, cy: ccy - badgeR * 0.34, r: badgeR * 0.24, fill: typeMeta(h.type).color }));
+    }
+    const label = svgEl("text", {
+      x: ccx, y: ccy + (h.type === "generic" ? badgeR * 0.2 : badgeR * 0.68),
+      "text-anchor": "middle", "font-size": badgeR * 0.62, "font-weight": "800", fill: BADGE_TEXT,
+    });
+    label.textContent = h.type === "generic" ? "3:1" : "2:1";
+    g.appendChild(label);
+
+    board.appendChild(g);
+
+    if (animate) {
+      g.style.opacity = "0";
+      g.style.transition = `opacity 420ms ease ${baseDelay}ms`;
+      requestAnimationFrame(() => requestAnimationFrame(() => { g.style.opacity = "1"; }));
+    }
+  }
+}
+
 function draw(boardState) {
   clearSvg(board);
 
@@ -348,10 +430,18 @@ function draw(boardState) {
   board.appendChild(defs);
 
   const size = 110;
-  const origin = { x: 550, y: 440 };
+  // Origin centered in the viewBox (1280x1060) with extra margin beyond
+  // the land hexes so harbor piers (which protrude ~1.6x a hex radius)
+  // never clip against the canvas edge.
+  const origin = { x: 640, y: 530 };
+  // Tiles genuinely scatter onto the board — random direction/tilt per
+  // tile, staggered, settling with a spring-like ease. Respects the
+  // "Animate Tiles" checkbox and the OS reduced-motion preference.
+  const animate = animateEl.checked && !prefersReducedMotion;
 
-  const tiles = boardState;
-  for (const tile of tiles) {
+  const tiles = boardState.tiles;
+  drawHarbors(boardState, size, origin, animate, tiles.length * 55 + 250);
+  tiles.forEach((tile, tileIndex) => {
     const { x, y } = axialToPixel(tile, size, origin);
     const meta = typeMeta(tile.key);
 
@@ -422,7 +512,27 @@ function draw(boardState) {
     }
 
     board.appendChild(g);
-  }
+
+    if (animate) {
+      const dx = (Math.random() - 0.5) * 560;
+      const dy = -240 - Math.random() * 160;
+      const rot = (Math.random() - 0.5) * 70;
+      const delay = tileIndex * 55;
+      g.style.transformBox = "fill-box";
+      g.style.transformOrigin = "center";
+      g.style.opacity = "0";
+      g.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg) scale(1.15)`;
+      g.style.transition =
+        `transform 620ms cubic-bezier(.17,.84,.44,1) ${delay}ms, ` +
+        `opacity 260ms ease ${delay}ms`;
+      // Double rAF: guarantees the browser has painted the initial
+      // (off-screen) state before the transition to final values starts.
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        g.style.opacity = "1";
+        g.style.transform = "translate(0,0) rotate(0deg) scale(1)";
+      }));
+    }
+  });
 }
 
 function currentSeed() {
@@ -499,6 +609,11 @@ randomSeedBtn.addEventListener("click", () => {
 seedInput.addEventListener("input", regenerate);
 
 showNumbersEl.addEventListener("change", regenerate);
+
+animateEl.addEventListener("change", () => {
+  localStorage.setItem('catanAnimate', animateEl.checked ? '1' : '0');
+  regenerate();
+});
 
 presetSelect.addEventListener("change", () => {
   if (presetSelect.value === "classic") applyPreset("classic");
