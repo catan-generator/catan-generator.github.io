@@ -243,4 +243,4 @@ h3{
 .siteFooter{ margin-top: 30px; text-align:center; font-size: 13px; color: var(--muted); display:flex; flex-direction:column; align-items:center; gap:12px; }
 .siteFooterLinks{ display:flex; gap:10px; justify-content:center; }
 .siteFooter a{ color: var(--accent); text-decoration:none; font-weight:700; }
-.siteFooterLogo{ opacity:0.85; height:19px; width:auto; }
+.siteFooterLogo{ display:block; margin:0 auto; opacity:0.85; height:19px; width:auto; }

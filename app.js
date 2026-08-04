@@ -262,7 +262,13 @@ const translations = {
     faq3q: "Can I replay the same map?",
     faq3a: "Yes \u2014 every map comes from a seed. Same seed + same rules = identical board on any device.",
     privacy: "Privacy Policy",
-    footerNote: "Free & open \u2014 no ads, no tracking"
+    footerNote: "Free & open \u2014 no ads, no tracking",
+    wood: "Wood",
+    brick: "Brick",
+    sheep: "Sheep",
+    wheat: "Wheat",
+    ore: "Ore",
+    desert: "Desert"
   },
   tr: {
     seed: "Seed",
@@ -291,17 +297,38 @@ const translations = {
     faq3q: "Aynı haritayı tekrar açabilir miyim?",
     faq3a: "Evet \u2014 her harita bir seed'den üretilir. Aynı seed + aynı kurallar = her cihazda birebir aynı tahta.",
     privacy: "Gizlilik Politikası",
-    footerNote: "Ücretsiz \u2014 reklamsız, takipsiz"
+    footerNote: "Ücretsiz \u2014 reklamsız, takipsiz",
+    wood: "Orman",
+    brick: "Tuğla",
+    sheep: "Koyun",
+    wheat: "Buğday",
+    ore: "Maden",
+    desert: "Çöl"
   }
 };
 
+let currentLang = 'en';
+
 function setLanguage(lang) {
+  currentLang = lang;
+
+  // Keep the document's lang in sync with the selected language — CSS
+  // text-transform:uppercase follows it for case-folding, and with a
+  // stale lang="tr" left over, English text containing "i" (e.g.
+  // "Options") uppercases using Turkish rules into "OPTİONS" (dotted
+  // capital İ) instead of "OPTIONS".
+  document.documentElement.lang = lang;
+
   document.querySelectorAll('[data-lang]').forEach(el => {
     const key = el.getAttribute('data-lang');
     if (translations[lang] && translations[lang][key]) {
       el.textContent = translations[lang][key];
     }
   });
+
+  // The legend's resource names were previously hardcoded Turkish and
+  // never followed the language toggle at all — re-render it here.
+  renderLegend();
 
   // Update placeholder
   const placeholder = lang === 'tr' ? 'örn: 12345 veya merhaba' : 'e.g. 12345 or hello';
@@ -337,7 +364,8 @@ function renderLegend() {
     sw.className = "swatch";
     sw.style.background = t.color;
     const txt = document.createElement("div");
-    txt.textContent = `${t.label} (${t.key})`;
+    const label = (translations[currentLang] && translations[currentLang][t.key]) || t.label;
+    txt.textContent = `${label} (${t.key})`;
     div.appendChild(sw);
     div.appendChild(txt);
     legend.appendChild(div);
