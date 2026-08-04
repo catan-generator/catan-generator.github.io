@@ -1,190 +1,38 @@
-// --- Seeded RNG (mulberry32 + string hash) ---
-function xmur3(str) {
-  let h = 1779033703 ^ str.length;
-  for (let i = 0; i < str.length; i++) {
-    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
-    h = (h << 13) | (h >>> 19);
-  }
-  return function() {
-    h = Math.imul(h ^ (h >>> 16), 2246822507);
-    h = Math.imul(h ^ (h >>> 13), 3266489909);
-    h ^= h >>> 16;
-    return h >>> 0;
-  };
-}
-function mulberry32(a) {
-  return function() {
-    let t = a += 0x6D2B79F5;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-function seededRng(seedStr) {
-  const seedFn = xmur3(seedStr);
-  return mulberry32(seedFn());
-}
-function shuffleInPlace(arr, rng) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
 // --- Tiles / numbers ---
+// Display names come from `translations` (keyed by the same `key`) —
+// see renderLegend().
 const TILE_TYPES = [
-  { key: "wood",  label: "Orman",  color: "#2f7d32", img: "assets/wood.svg" },
-  { key: "brick", label: "Tuğla",  color: "#b04b3a", img: "assets/brick.svg" },
-  { key:  "sheep", label: "Koyun",  color: "#7ed957", img: "assets/sheep.svg" },
-  { key: "wheat", label: "Buğday", color: "#e6c84e", img: "assets/wheat.svg" },
-  { key: "ore",   label: "Maden",  color: "#6d7a8a", img: "assets/ore.svg" },
-  { key: "desert",label: "Çöl",    color: "#d6c28f", img: "assets/desert.svg" },
+  { key: "wood",   color: "#2f7d32", img: "assets/wood.svg" },
+  { key: "brick",  color: "#b04b3a", img: "assets/brick.svg" },
+  { key: "sheep",  color: "#7ed957", img: "assets/sheep.svg" },
+  { key: "wheat",  color: "#e6c84e", img: "assets/wheat.svg" },
+  { key: "ore",    color: "#6d7a8a", img: "assets/ore.svg" },
+  { key: "desert", color: "#d6c28f", img: "assets/desert.svg" },
 ];
-
 
 function typeMeta(key) {
   return TILE_TYPES.find(t => t.key === key) ??  TILE_TYPES[0];
 }
 
-// Base Catan (19): 4 wood, 3 brick, 4 sheep, 4 wheat, 3 ore, 1 desert
-function defaultTileBag() {
-  return [
-    ... Array(4).fill("wood"),
-    ...Array(3).fill("brick"),
-    ...Array(4).fill("sheep"),
-    ...Array(4).fill("wheat"),
-    ...Array(3).fill("ore"),
-    ...Array(1).fill("desert"),
-  ];
-}
-
-// Base game number tokens (desert hariç 18)
-function defaultNumberBag() {
-  return [2,3,3,4,4,5,5,6,6,8,8,9,9,10,10,11,11,12];
-}
-
-// Layout axial coords for rows:  3-4-5-4-3 (pointy-top)
-function baseAxialCoords() {
-  const rows = [
-    { r: -2, qStart: 0,  len: 3 },
-    { r: -1, qStart: -1, len: 4 },
-    { r:  0, qStart: -2, len:  5 },
-    { r:  1, qStart: -2, len: 4 },
-    { r:  2, qStart: -2, len: 3 },
-  ];
-  const coords = [];
-  for (const row of rows) {
-    for (let i = 0; i < row.len; i++) coords.push({ q: row.qStart + i, r: row.r });
-  }
-  return coords;
-}
-
-
-// --- Hex helpers ---
-function axialToKey(q, r) { return `${q},${r}`; }
-function neighborsOf({q, r}) {
-  const dirs = [
-    {dq: 1, dr: 0},
-    {dq: 1, dr: -1},
-    {dq:  0, dr: -1},
-    {dq:  -1, dr: 0},
-    {dq: -1, dr: 1},
-    {dq: 0, dr: 1},
-  ];
-  return dirs.map(d => ({ q: q + d.dq, r: r + d.dr }));
-}
-
-function buildNeighborMap(coords) {
-  const coordSet = new Set(coords.map(c => axialToKey(c.q, c.r)));
-  const neighMap = new Map();
-  for (const c of coords) {
-    const ns = neighborsOf(c).filter(n => coordSet.has(axialToKey(n.q, n.r)));
-    neighMap.set(axialToKey(c.q, c.r), ns.map(n => axialToKey(n.q, n.r)));
-  }
-  return neighMap;
-}
-
 // --- Options / rules ---
 function readOptions() {
   return {
-    redCanTouch: !document.getElementById("optRedTouch").checked,        // Inverted: checked = cannot touch
-    twoTwelveCanTouch: !document.getElementById("optTwoTwelveTouch").checked,
-    sameNumbersCanTouch: !document.getElementById("optSameNumbersTouch").checked,
-    sameResourceCanTouch: !document.getElementById("optSameResourceTouch").checked,
-    sameResourceSameNumber: !document.getElementById("optSameResourceSameNumber").checked,
+    redCanTouch: !optRedTouch.checked,        // Inverted: checked = cannot touch
+    twoTwelveCanTouch: !optTwoTwelveTouch.checked,
+    sameNumbersCanTouch: !optSameNumbersTouch.checked,
+    sameResourceCanTouch: !optSameResourceTouch.checked,
+    sameResourceSameNumber: !optSameResourceSameNumber.checked,
   };
 }
 
 function applyPreset(preset) {
-  const red = document.getElementById("optRedTouch");
-  const two12 = document.getElementById("optTwoTwelveTouch");
-  const sameNum = document.getElementById("optSameNumbersTouch");
-  const sameRes = document.getElementById("optSameResourceTouch");
-  const sameResSameNum = document.getElementById("optSameResourceSameNumber");
-
   if (preset === "classic") {
-    red.checked = true;         // Checked = 6 & 8 CANNOT touch
-    two12.checked = true;       // Checked = 2 & 12 CANNOT touch
-    sameNum.checked = true;     // Checked = Same numbers CANNOT touch
-    sameRes.checked = true;     // Checked = Same resources CANNOT touch
-    sameResSameNum.checked = true;
+    optRedTouch.checked = true;              // Checked = 6 & 8 CANNOT touch
+    optTwoTwelveTouch.checked = true;        // Checked = 2 & 12 CANNOT touch
+    optSameNumbersTouch.checked = true;      // Checked = Same numbers CANNOT touch
+    optSameResourceTouch.checked = true;     // Checked = Same resources CANNOT touch
+    optSameResourceSameNumber.checked = true;
   }
-}
-
-// Generic constraint check
-function violatesConstraintsAtPlacement({coordKey, tileKey, number}, placed, neighMap, options, allPlaced) {
-  const neighs = neighMap.get(coordKey) || [];
-
-  // Check neighbor constraints
-  for (const nk of neighs) {
-    const p = placed.get(nk);
-    if (!p) continue;
-
-    // Same resource cannot touch
-    if (! options.sameResourceCanTouch) {
-      if (p.tileKey === tileKey) {
-        // console.log(`Blocked: ${tileKey} cannot touch ${p.tileKey}`);
-        return true;
-      }
-    }
-
-    if (number != null && p.number != null) {
-      const isRed = (n) => n === 6 || n === 8;
-
-      // Red numbers (6 and 8) can never touch each other
-      if (isRed(p.number) && isRed(number)) {
-        if (!options.redCanTouch) {
-          return true;
-        }
-      }
-
-      // Check if same numbers can touch
-      if (!options.sameNumbersCanTouch) {
-        if (p.number === number) return true;
-      }
-
-      // 2 and 12 cannot touch
-      if (!options.twoTwelveCanTouch) {
-        const isTwoTwelvePair =
-          (p.number === 2 && number === 12) || (p.number === 12 && number === 2);
-        if (isTwoTwelvePair) return true;
-      }
-    }
-  }
-
-  // Check global constraint: same resource cannot have same number anywhere on board
-  if (! options.sameResourceSameNumber && number != null && tileKey !== "desert") {
-    // Check all already placed tiles (in the placed Map, not allPlaced array)
-    for (const [key, tile] of placed.entries()) {
-      if (key === coordKey) continue; // Skip current position
-      if (tile.tileKey === tileKey && tile.number === number) {
-        return true;
-      }
-    }
-  }
-
-  return false;
 }
 
 // Board generation — delegated to the backtracking core in
@@ -364,8 +212,7 @@ function renderLegend() {
     sw.className = "swatch";
     sw.style.background = t.color;
     const txt = document.createElement("div");
-    const label = (translations[currentLang] && translations[currentLang][t.key]) || t.label;
-    txt.textContent = label;
+    txt.textContent = translations[currentLang][t.key];
     div.appendChild(sw);
     div.appendChild(txt);
     legend.appendChild(div);
@@ -616,7 +463,6 @@ function loadFromUrl() {
   setIfPresent("optSameResourceSameNumber", "rsn");
 }
 
-renderLegend();
 loadFromUrl();
 if (presetSelect.value === "classic") applyPreset("classic");
 regenerate();
