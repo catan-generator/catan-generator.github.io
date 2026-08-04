@@ -365,7 +365,7 @@ function renderLegend() {
     sw.style.background = t.color;
     const txt = document.createElement("div");
     const label = (translations[currentLang] && translations[currentLang][t.key]) || t.label;
-    txt.textContent = `${label} (${t.key})`;
+    txt.textContent = label;
     div.appendChild(sw);
     div.appendChild(txt);
     legend.appendChild(div);
