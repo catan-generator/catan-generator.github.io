@@ -240,5 +240,7 @@ h3{
 .seo strong{ color: var(--text); }
 .seo dt{ font-size: 14px; font-weight: 800; margin-top: 10px; margin-bottom: 4px; }
 
-.siteFooter{ margin-top: 30px; text-align:center; font-size: 13px; color: var(--muted); display:flex; gap:10px; justify-content:center; }
+.siteFooter{ margin-top: 30px; text-align:center; font-size: 13px; color: var(--muted); display:flex; flex-direction:column; align-items:center; gap:12px; }
+.siteFooterLinks{ display:flex; gap:10px; justify-content:center; }
 .siteFooter a{ color: var(--accent); text-decoration:none; font-weight:700; }
+.siteFooterLogo{ opacity:0.85; height:19px; width:auto; }
