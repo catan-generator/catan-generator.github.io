@@ -93,44 +93,31 @@
     const a = (Math.PI / 180) * (60 * k - 90);
     return { x: Math.cos(a), y: Math.sin(a) };
   }
-  function axialToPixelUnit(q, r) {
-    return { x: Math.sqrt(3) * (q + r / 2), y: 1.5 * r };
-  }
 
   /** Base-game harbor pool: 4 generic (3:1) + one 2:1 per resource. */
   function harborPool() {
     return ['generic', 'generic', 'generic', 'generic', 'wood', 'sheep', 'wheat', 'brick', 'ore'];
   }
 
-  /** Coastal {cell, edge} slots, ordered clockwise from the top by angle. */
-  function coastalEdges(coords) {
-    const key = (q, r) => q + ',' + r;
-    const inSet = new Set(coords.map((c) => key(c.q, c.r)));
-    const centers = coords.map((c) => axialToPixelUnit(c.q, c.r));
-    const cx = centers.reduce((s, p) => s + p.x, 0) / centers.length;
-    const cy = centers.reduce((s, p) => s + p.y, 0) / centers.length;
-
-    const edges = [];
-    coords.forEach((cell, i) => {
-      EDGE_DIRS.forEach((d, edge) => {
-        if (inSet.has(key(cell.q + d[0], cell.r + d[1]))) return;
-        const c = centers[i];
-        const a = hexCornerUnit(edge);
-        const b = hexCornerUnit(edge + 1);
-        const mx = c.x + (a.x + b.x) / 2;
-        const my = c.y + (a.y + b.y) / 2;
-        const angle = (Math.atan2(mx - cx, -(my - cy)) + 2 * Math.PI) % (2 * Math.PI);
-        edges.push({ cell: i, edge, angle });
-      });
-    });
-    edges.sort((p, q2) => p.angle - q2.angle);
-    return edges.map((e) => ({ cell: e.cell, edge: e.edge }));
-  }
-
-  /** Evenly spaced anchors along the coast, like the physical frame. */
-  function pickHarborSlots(coastal, count) {
-    return Array.from({ length: count }, (_, i) => coastal[Math.floor((i * coastal.length) / count)]);
-  }
+  /**
+   * Fixed harbor edges for the classic board — verified against the official
+   * Catan rulebook's board diagram (every "point" hex — the 6 vertices of the
+   * hex-shaped coastline, each with 3 edges open to sea — hosts a harbor; the
+   * remaining 3 harbors go to 3 evenly-spaced "side" hexes). Not computed at
+   * runtime: cell/edge indices are stable since coordsList() always produces
+   * the same 19-cell order, and edge 0-5 = NE, E, SE, SW, W, NW.
+   */
+  const CLASSIC_HARBOR_SLOTS = [
+    { cell: 18, edge: 2 },
+    { cell: 15, edge: 1 },
+    { cell: 6, edge: 1 },
+    { cell: 2, edge: 0 },
+    { cell: 1, edge: 5 },
+    { cell: 3, edge: 5 },
+    { cell: 7, edge: 4 },
+    { cell: 12, edge: 3 },
+    { cell: 17, edge: 3 },
+  ];
 
   const isRed = (n) => n === 6 || n === 8;
   const isLow = (n) => n === 2 || n === 12;
@@ -216,7 +203,7 @@
       }));
       // Harbor types are shuffled with the SAME rng continuing from the
       // tile/number placement, so a seed reproduces harbors too.
-      const slots = pickHarborSlots(coastalEdges(coords), harborPool().length);
+      const slots = CLASSIC_HARBOR_SLOTS;
       const types = shuffle(harborPool(), rng);
       const harbors = slots.map((slot, i) => ({ cell: slot.cell, edge: slot.edge, type: types[i] }));
 
@@ -254,7 +241,7 @@
       }
     }
 
-    const expectedSlots = pickHarborSlots(coastalEdges(coords), harborPool().length);
+    const expectedSlots = CLASSIC_HARBOR_SLOTS;
     const norm = (arr) => arr.map((s) => s.cell + ':' + s.edge).sort().join(',');
     if (norm(board.harbors) !== norm(expectedSlots)) bad.push('harbor slots mismatch');
     const pool = (arr) => arr.map((h) => h.type).sort().join(',');
@@ -265,7 +252,7 @@
 
   const api = {
     generate, validate, coordsList, tileBag, numberBag, seededRng,
-    harborPool, coastalEdges, pickHarborSlots, hexCornerUnit, EDGE_DIRS,
+    harborPool, hexCornerUnit, EDGE_DIRS,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.CatanGen = api;
