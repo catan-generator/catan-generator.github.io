@@ -111,8 +111,6 @@ const translations = {
     faq3a: "Yes \u2014 every map comes from a seed. Same seed + same rules = identical board on any device.",
     privacy: "Privacy Policy",
     getApp: "Get it on Google Play",
-    appBannerTitle: "Hex Board app is out!",
-    appBannerBody: "This generator plus score tracking and dice — now on Android.",
     footerNote: "Free & open source \u2014 no ads, no tracking",
     wood: "Wood",
     brick: "Brick",
@@ -149,8 +147,6 @@ const translations = {
     faq3a: "Evet \u2014 her harita bir seed'den üretilir. Aynı seed + aynı kurallar = her cihazda birebir aynı tahta.",
     privacy: "Gizlilik Politikası",
     getApp: "Google Play'de İndir",
-    appBannerTitle: "Hex Board uygulaması çıktı!",
-    appBannerBody: "Bu üretici + skor takibi ve zar — şimdi Android'de.",
     footerNote: "Ücretsiz ve açık kaynak \u2014 reklamsız, takipsiz",
     wood: "Orman",
     brick: "Tuğla",
@@ -509,13 +505,3 @@ optTwoTwelveTouch.addEventListener("change", onOptionChanged);
 optSameNumbersTouch.addEventListener("change", onOptionChanged);
 optSameResourceTouch.addEventListener("change", onOptionChanged);
 optSameResourceSameNumber.addEventListener("change", onOptionChanged);
-
-// App promo banner — hidden until we know it wasn't dismissed before.
-const appBannerEl = document.getElementById('appBanner');
-if (appBannerEl && localStorage.getItem('appBannerDismissed') !== '1') {
-  appBannerEl.hidden = false;
-}
-document.getElementById('appBannerClose')?.addEventListener('click', () => {
-  appBannerEl.hidden = true;
-  localStorage.setItem('appBannerDismissed', '1');
-});
