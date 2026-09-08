@@ -25,13 +25,18 @@ Android: Open in Chrome → Menu → Add to home screen
 
 ## Deploy
 
-GitHub Pages or Netlify.
+GitHub Pages (Settings > Pages > Source: main). Always deploy through the
+script — it stamps a fresh build id into the service worker cache name and
+the `?v=` asset params, so PWA users get the new version on their next load
+instead of a stale cached copy.
 
 ```bash
-git push origin main
+git commit -am "feat: ..."   # your changes first
+./deploy.sh                  # stamp + commit + push
 ```
 
-GitHub Settings > Pages > Source: main
+Caching: HTML/JS/CSS are network-first (cache only used offline); images
+are cache-first. A new service worker reloads open tabs once automatically.
 
 ---
 

@@ -195,10 +195,25 @@
   <!-- PWA Service Worker Registration -->
   <script>
     if ('serviceWorker' in navigator) {
+      // When a new service worker takes over (a deploy happened while this
+      // tab was open or cached), reload ONCE so the page runs the new
+      // assets instead of the ones it started with. The guard prevents a
+      // reload loop and skips the very first install (no previous controller).
+      let hadController = Boolean(navigator.serviceWorker.controller);
+      let reloading = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!hadController || reloading) { hadController = true; return; }
+        reloading = true;
+        window.location.reload();
+      });
+
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
+        // updateViaCache:'none' → the browser re-fetches service-worker.js
+        // from the network on every check instead of the HTTP cache.
+        navigator.serviceWorker.register('/service-worker.js', { updateViaCache: 'none' })
           .then((registration) => {
             console.log('✓ PWA: Service Worker registered', registration.scope);
+            registration.update().catch(() => {});
           })
           .catch((error) => {
             console.log('✗ PWA: Service Worker registration failed', error);
