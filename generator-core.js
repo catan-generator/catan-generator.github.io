@@ -119,6 +119,24 @@
     { cell: 17, edge: 3 },
   ];
 
+  /**
+   * Port shuffle — the 9 harbor tokens are Fisher-Yates shuffled into the
+   * fixed coastal slots with NO adjacency constraints (the official
+   * "variable setup" rule: harbors are dealt purely at random).
+   *
+   * harborShuffle 0 (default) continues the board rng, so an existing seed
+   * keeps reproducing the exact harbors it always had. "Shuffle Ports"
+   * bumps the counter and re-deals ONLY the harbors from an rng derived
+   * from seed + counter — tiles and numbers stay put, and the result is
+   * still reproducible (the counter travels in the ports= URL param).
+   */
+  function placeHarbors(seedStr, harborShuffle, rng) {
+    const n = Number(harborShuffle) || 0;
+    const harborRng = n > 0 ? seededRng(String(seedStr) + '#ports:' + n) : rng;
+    const types = shuffle(harborPool(), harborRng);
+    return CLASSIC_HARBOR_SLOTS.map((slot, i) => ({ cell: slot.cell, edge: slot.edge, type: types[i] }));
+  }
+
   const isRed = (n) => n === 6 || n === 8;
   const isLow = (n) => n === 2 || n === 12;
 
@@ -156,7 +174,8 @@
 
   /**
    * options: { redCanTouch, twoTwelveCanTouch, sameNumbersCanTouch,
-   *            sameResourceCanTouch, sameResourceSameNumber }
+   *            sameResourceCanTouch, sameResourceSameNumber,
+   *            harborShuffle (integer, 0 = default deal — see placeHarbors) }
    * (true = allowed; matches the existing readOptions() semantics —
    *  sameResourceSameNumber true = same resource MAY repeat a number)
    */
@@ -201,11 +220,7 @@
         key: resources.get(i),
         number: resources.get(i) === 'desert' ? null : numbers.get(i),
       }));
-      // Harbor types are shuffled with the SAME rng continuing from the
-      // tile/number placement, so a seed reproduces harbors too.
-      const slots = CLASSIC_HARBOR_SLOTS;
-      const types = shuffle(harborPool(), rng);
-      const harbors = slots.map((slot, i) => ({ cell: slot.cell, edge: slot.edge, type: types[i] }));
+      const harbors = placeHarbors(seedStr, options.harborShuffle, rng);
 
       return { tiles, harbors };
     }
@@ -252,7 +267,7 @@
 
   const api = {
     generate, validate, coordsList, tileBag, numberBag, seededRng,
-    harborPool, hexCornerUnit, EDGE_DIRS,
+    harborPool, placeHarbors, hexCornerUnit, EDGE_DIRS,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.CatanGen = api;

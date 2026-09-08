@@ -15,6 +15,12 @@ function typeMeta(key) {
 }
 
 // --- Options / rules ---
+// Port shuffle counter: 0 = the harbors a seed always dealt; each
+// "Shuffle Ports" tap bumps it and re-deals ONLY the 9 harbors (tiles and
+// numbers stay). Travels in the ports= URL param so shared links reproduce
+// the harbors too; resets whenever the seed changes.
+let portShuffleCount = 0;
+
 function readOptions() {
   return {
     redCanTouch: !optRedTouch.checked,        // Inverted: checked = cannot touch
@@ -22,6 +28,7 @@ function readOptions() {
     sameNumbersCanTouch: !optSameNumbersTouch.checked,
     sameResourceCanTouch: !optSameResourceTouch.checked,
     sameResourceSameNumber: !optSameResourceSameNumber.checked,
+    harborShuffle: portShuffleCount,
   };
 }
 
@@ -63,6 +70,7 @@ const board = document.getElementById("board");
 const seedInput = document.getElementById("seedInput");
 const generateBtn = document.getElementById("generateBtn");
 const randomSeedBtn = document.getElementById("randomSeedBtn");
+const shufflePortsBtn = document.getElementById("shufflePortsBtn");
 const showNumbersEl = document.getElementById("showNumbers");
 const animateEl = document.getElementById("optAnimate");
 const legend = document.getElementById("legend");
@@ -87,6 +95,7 @@ const translations = {
     seed: "Seed",
     newMap: "New Map",
     randomSeed: "Random Seed",
+    shufflePorts: "Shuffle Ports",
     animateTiles: "Animate Tiles",
     showNumbers: "Show Numbers",
     options: "Options",
@@ -123,6 +132,7 @@ const translations = {
     seed: "Seed",
     newMap: "Yeni Harita",
     randomSeed: "Rastgele Seed",
+    shufflePorts: "Limanları Karıştır",
     animateTiles: "Karoları Canlandır",
     showNumbers: "Numaraları Göster",
     options: "Seçenekler",
@@ -295,7 +305,10 @@ function drawHarbors(state, size, origin, animate, baseDelay) {
   }
 }
 
-function draw(boardState) {
+// drawOpts.harborsOnly: the island is unchanged (Shuffle Ports) — keep the
+// tiles still and only fade the re-dealt piers in.
+function draw(boardState, drawOpts) {
+  const harborsOnly = Boolean(drawOpts && drawOpts.harborsOnly);
   clearSvg(board);
 
   const defs = svgEl("defs");
@@ -314,10 +327,11 @@ function draw(boardState) {
   // Tiles genuinely scatter onto the board — random direction/tilt per
   // tile, staggered, settling with a spring-like ease. Respects the
   // "Animate Tiles" checkbox and the OS reduced-motion preference.
-  const animate = animateEl.checked && !prefersReducedMotion;
+  const animate = animateEl.checked && !prefersReducedMotion && !harborsOnly;
 
   const tiles = boardState.tiles;
-  drawHarbors(boardState, size, origin, animate, tiles.length * 55 + 250);
+  const harborAnimate = animateEl.checked && !prefersReducedMotion;
+  drawHarbors(boardState, size, origin, harborAnimate, harborsOnly ? 0 : tiles.length * 55 + 250);
   tiles.forEach((tile, tileIndex) => {
     const { x, y } = axialToPixel(tile, size, origin);
     const meta = typeMeta(tile.key);
@@ -416,13 +430,13 @@ function currentSeed() {
   return seedInput.value.trim() || "catan";
 }
 
-function regenerate() {
+function regenerate(drawOpts) {
   try {
     const seedStr = currentSeed();
     const options = readOptions();
     console.log('Options:', options);
     const state = generateBoardWithRules(seedStr, options);
-    draw(state);
+    draw(state, drawOpts);
 
     const url = new URL(window.location.href);
     url.searchParams.set("seed", seedStr);
@@ -432,6 +446,8 @@ function regenerate() {
     url.searchParams.set("sn", options.sameNumbersCanTouch ? "1" : "0");
     url.searchParams.set("sr", options.sameResourceCanTouch ? "1" :  "0");
     url.searchParams.set("rsn", options.sameResourceSameNumber ? "1" : "0");
+    if (portShuffleCount > 0) url.searchParams.set("ports", String(portShuffleCount));
+    else url.searchParams.delete("ports");
     history.replaceState(null, "", url.toString());
   } catch (error) {
     console.error("Error in regenerate:", error);
@@ -463,6 +479,9 @@ function loadFromUrl() {
   setIfPresent("optSameNumbersTouch", "sn");
   setIfPresent("optSameResourceTouch", "sr");
   setIfPresent("optSameResourceSameNumber", "rsn");
+
+  const ports = parseInt(url.searchParams.get("ports"), 10);
+  portShuffleCount = Number.isFinite(ports) && ports > 0 ? ports : 0;
 }
 
 loadFromUrl();
@@ -472,17 +491,29 @@ regenerate();
 // "Yeni Harita" - generate new random board
 generateBtn.addEventListener("click", () => {
   seedInput.value = randomSeed();
+  portShuffleCount = 0;
   regenerate();
 });
 
 // "Rastgele Seed" - also generate new random board (same as Yeni Harita)
 randomSeedBtn.addEventListener("click", () => {
   seedInput.value = randomSeed();
+  portShuffleCount = 0;
   regenerate();
 });
 
+// "Shuffle Ports" - re-deal only the 9 harbors (Fisher-Yates, no
+// constraints); the island itself is untouched, so only the piers animate.
+shufflePortsBtn.addEventListener("click", () => {
+  portShuffleCount += 1;
+  regenerate({ harborsOnly: true });
+});
+
 // Auto-regenerate when seed input changes manually
-seedInput.addEventListener("input", regenerate);
+seedInput.addEventListener("input", () => {
+  portShuffleCount = 0;
+  regenerate();
+});
 
 showNumbersEl.addEventListener("change", regenerate);
 
