@@ -9,7 +9,7 @@
 //
 // CACHE_NAME is stamped by ./deploy.sh on every deploy, so old caches are
 // swept in `activate` even if a stale entry ever slipped through.
-const CACHE_NAME = 'catan-gen-20261103-101925';
+const CACHE_NAME = 'catan-gen-20261103-102417';
 const PRECACHE = [
   '/',
   '/index.html',
