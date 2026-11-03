@@ -80,10 +80,15 @@
         <small data-lang="tagline">Fair boards, every game night</small>
       </h1>
     </div>
+    <div class="topActions">
+    <a class="coffeeBtn" href="https://ko-fi.com/ulkubayraktar?ref=generator" target="_blank" rel="noopener">
+      <span aria-hidden="true">☕</span> <span data-lang="coffee">Buy me a coffee</span>
+    </a>
     <select id="langSelect">
       <option value="en">EN</option>
       <option value="tr">TR</option>
     </select>
+    </div>
   </header>
 
   <main>
@@ -113,6 +118,14 @@
     <aside class="sidebar">
       <section class="panel">
         <h3 data-lang="options">Options</h3>
+
+        <label class="selectRow">
+          <span data-lang="boardStyle">Board style</span>
+          <select id="styleSelect">
+            <option value="modern" data-lang="styleModern">Modern</option>
+            <option value="classic" data-lang="styleClassic">Classic</option>
+          </select>
+        </label>
 
         <label class="selectRow">
           <span data-lang="preset">Preset</span>
@@ -162,9 +175,26 @@
     </aside>
   </main>
 
-  <section class="seo">
-    <div class="panel">
-      <h2 data-lang="aboutTitle">What is this Catan board generator?</h2>
+  <footer class="siteFooter">
+    <div class="siteFooterLinks">
+      <a href="#about" id="aboutLink" data-lang="aboutLink">About &amp; FAQ</a>
+      <span>·</span>
+      <a href="privacy.html" data-lang="privacy">Privacy Policy</a>
+      <span>·</span>
+      <a href="https://play.google.com/store/apps/details?id=com.fisoft.hexboard" data-lang="getApp" target="_blank" rel="noopener">Get it on Google Play</a>
+    </div>
+    <div class="siteFooterMeta">
+      <img src="fisoft-logo.png" alt="Fi-Soft" class="siteFooterLogo" width="82" height="19" />
+      <span data-lang="footerNote">Free &amp; open source — no ads, no tracking</span>
+      <span>·</span>
+      <span data-lang="disclaimerShort">Unofficial fan tool, not affiliated with CATAN GmbH.</span>
+    </div>
+  </footer>
+
+  <!-- About / FAQ: kept in the page (crawlable), shown as a dialog so the tool itself never scrolls -->
+  <dialog id="aboutDlg" class="aboutDlg seo" aria-labelledby="aboutHeading">
+    <button type="button" class="dlgClose" id="aboutClose" aria-label="Close">×</button>
+      <h2 id="aboutHeading" data-lang="aboutTitle">What is this Catan board generator?</h2>
       <p data-lang="aboutBody">This free online tool creates <strong>balanced, fair random Catan boards</strong> for the base game (3–4 players). Unlike simply shuffling tiles, it uses a constraint-solving algorithm so that every generated map is guaranteed to follow the placement rules you choose — the red numbers 6 &amp; 8 are never adjacent, 2 &amp; 12 stay apart, identical numbers don't cluster, and the same resources are spread across the island. Every board has a <strong>seed</strong>: share it with friends and they can open the exact same map. The app is free, has no ads, and works offline as a PWA.</p>
       <h2 data-lang="faqTitle">Frequently asked questions</h2>
       <dl>
@@ -175,22 +205,24 @@
         <dt data-lang="faq3q">Can I replay the same map?</dt>
         <dd data-lang="faq3a">Yes — every map is generated from a seed shown in the toolbar. Enter the same seed with the same rules and you get an identical board on any device.</dd>
       </dl>
-    </div>
-  </section>
-
-  <footer class="siteFooter">
-    <div class="siteFooterLinks">
-      <a href="privacy.html" data-lang="privacy">Privacy Policy</a>
-      <span>·</span>
-      <a href="https://play.google.com/store/apps/details?id=com.fisoft.hexboard" data-lang="getApp" target="_blank" rel="noopener">Get it on Google Play</a>
-      <span>·</span>
-      <span data-lang="footerNote">Free &amp; open source — no ads, no tracking</span>
-    </div>
-    <img src="fisoft-logo.png" alt="Fi-Soft" class="siteFooterLogo" width="82" height="19" />
-  </footer>
+      <p class="coffeeNote" data-lang="coffeeNote">This tool is free and ad-free. If it made your game night better, a coffee keeps it going.</p>
+      <p class="disclaimer" data-lang="disclaimer">Unofficial fan-made tool. Not affiliated with or endorsed by CATAN GmbH. CATAN is a registered trademark of CATAN GmbH.</p>
+  </dialog>
 
   <script src="generator-core.js?v=20260908-122705"></script>
   <script src="app.js?v=20260908-122705"></script>
+
+  <script>
+    (() => {
+      const dlg = document.getElementById('aboutDlg');
+      const open = (e) => { if (e) e.preventDefault(); if (!dlg.open) dlg.showModal(); };
+      document.getElementById('aboutLink').addEventListener('click', open);
+      document.getElementById('aboutClose').addEventListener('click', () => dlg.close());
+      dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });  // backdrop click
+      dlg.addEventListener('close', () => { if (location.hash === '#about') history.replaceState(null, '', location.pathname + location.search); });
+      if (location.hash === '#about') open();
+    })();
+  </script>
 
   <!-- PWA Service Worker Registration -->
   <script>

@@ -269,3 +269,47 @@ a.storeFab:hover{ transform: scale(1.08); border-color: var(--accent); color: va
 .siteFooterLinks{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
 .siteFooter a{ color: var(--accent); text-decoration:none; font-weight:700; }
 .siteFooterLogo{ display:block; margin:0 auto; opacity:0.85; height:19px; width:auto; }
+.topActions{ display:flex; align-items:center; gap:12px; }
+a.coffeeBtn{
+  display:inline-flex; align-items:center; gap:8px;
+  padding: 9px 16px; border-radius: 999px;
+  background: var(--surface); color: var(--text);
+  border: 1.5px solid var(--card-border);
+  font-size: 14px; font-weight:800; text-decoration:none; white-space:nowrap;
+  transition: transform .15s ease, border-color .15s ease, color .15s ease;
+}
+a.coffeeBtn:hover{ transform: scale(1.04); border-color: var(--accent); color: var(--accent); }
+@media (max-width: 520px){
+  a.coffeeBtn [data-lang="coffee"]{ display:none; }  /* phones: the cup alone */
+}
+
+/* Desktop: the whole page is one screen — board fills the space, options scroll inside, About/FAQ is a dialog. */
+@media (min-width: 921px) and (min-height: 600px){
+  html, body{ height: 100%; }
+  body{ display:flex; flex-direction:column; height: 100dvh; overflow: hidden; padding-bottom: 0; }
+  .topbar{ padding: 16px 4px 14px; }
+  main{ flex: 1; min-height: 0; grid-template-rows: auto minmax(0, 1fr); align-items: stretch; }
+  .canvasWrap{ min-height: 0; display:flex; }
+  .canvasWrap svg{ width: 100%; height: 100%; }
+  .sidebar{ min-height: 0; overflow-y: auto; scrollbar-width: thin; }
+  .siteFooter{ margin: 12px 0 12px; gap: 6px; }
+}
+
+/* About / FAQ dialog */
+.aboutDlg{
+  max-width: 720px; width: calc(100% - 32px); max-height: calc(100dvh - 64px);
+  margin: auto; padding: 28px 30px 22px; overflow-y: auto;
+  background: var(--card); color: var(--text);
+  border: 1px solid var(--card-border); border-radius: var(--radius);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+}
+.aboutDlg::backdrop{ background: rgba(4,7,12,0.7); }
+.aboutDlg.seo{ margin-top: auto; }
+.dlgClose{
+  position: sticky; top: 0; float: right; margin: -10px -12px 0 8px;
+  width: 38px; height: 38px; padding: 0; border-radius: 50%;
+  background: var(--surface); color: var(--text); border: 1.5px solid var(--card-border);
+  box-shadow: none; font-size: 22px; line-height: 1;
+}
+.aboutDlg .coffeeNote{ margin-top: 18px; color: var(--muted); font-size: 14px; }
+.aboutDlg .disclaimer{ margin-top: 8px; }

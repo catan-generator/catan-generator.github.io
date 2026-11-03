@@ -23,6 +23,12 @@ const PRECACHE = [
   '/assets/sheep.svg',
   '/assets/wheat.svg',
   '/assets/wood.svg',
+  '/assets/modern/wood.webp',
+  '/assets/modern/sheep.webp',
+  '/assets/modern/wheat.webp',
+  '/assets/modern/brick.webp',
+  '/assets/modern/ore.webp',
+  '/assets/modern/desert.webp',
 ];
 
 const NETWORK_FIRST = /\.(html|js|css|json|xml|txt)(\?.*)?$/i;

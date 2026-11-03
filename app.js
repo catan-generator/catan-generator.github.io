@@ -50,11 +50,26 @@ function generateBoardWithRules(seedStr, options) {
   return window.CatanGen.generate(seedStr, options);
 }
 
+// --- Board look ---
+// "modern" = the Hex Board app's isometric tiles: the board is squashed
+// vertically (ys) and every tile is a pre-rendered bitmap whose face is
+// 2·size·ys tall with an extrusion of depth·size below it.
+const LOOKS = {
+  classic: { ys: 1, depth: 0 },
+  modern: { ys: 0.9, depth: 0.22 },
+};
+let look = LOOKS.modern;
+
 // --- Hex geometry (pointy top) ---
 function axialToPixel({q, r}, size, origin) {
   const x = size * Math.sqrt(3) * (q + r/2) + origin.x;
   const y = size * 1.5 * r + origin.y;
   return { x, y };
+}
+// Tile centre on screen: axial position, squashed toward the origin by look.ys.
+function tilePos(tile, size, origin) {
+  const p = axialToPixel(tile, size, origin);
+  return { x: p.x, y: origin.y + (p.y - origin.y) * look.ys };
 }
 function hexPoints(cx, cy, size) {
   const pts = [];
@@ -88,6 +103,8 @@ const optSameNumbersTouch = document.getElementById("optSameNumbersTouch");
 const optSameResourceTouch = document.getElementById("optSameResourceTouch");
 const optSameResourceSameNumber = document.getElementById("optSameResourceSameNumber");
 const langSelect = document.getElementById("langSelect");
+const styleSelect = document.getElementById("styleSelect");
+styleSelect.value = localStorage.getItem('catanStyle') === 'classic' ? 'classic' : 'modern';
 
 // --- Language System ---
 const translations = {
@@ -121,6 +138,14 @@ const translations = {
     privacy: "Privacy Policy",
     getApp: "Get it on Google Play",
     footerNote: "Free & open source \u2014 no ads, no tracking",
+    coffee: "Buy me a coffee",
+    boardStyle: "Board style",
+    styleModern: "Modern",
+    styleClassic: "Classic",
+    aboutLink: "About & FAQ",
+    disclaimerShort: "Unofficial fan tool, not affiliated with CATAN GmbH.",
+    coffeeNote: "This tool is free and ad-free. If it made your game night better, a coffee keeps it going.",
+    disclaimer: "Unofficial fan-made tool. Not affiliated with or endorsed by CATAN GmbH. CATAN is a registered trademark of CATAN GmbH.",
     wood: "Wood",
     brick: "Brick",
     sheep: "Sheep",
@@ -158,6 +183,14 @@ const translations = {
     privacy: "Gizlilik Politikası",
     getApp: "Google Play'de İndir",
     footerNote: "Ücretsiz ve açık kaynak \u2014 reklamsız, takipsiz",
+    coffee: "Bir kahve ısmarla",
+    boardStyle: "Tahta stili",
+    styleModern: "Modern",
+    styleClassic: "Klasik",
+    aboutLink: "Hakkında & SSS",
+    disclaimerShort: "Resmi olmayan hayran aracı, CATAN GmbH ile bağlantılı değildir.",
+    coffeeNote: "Bu araç ücretsiz ve reklamsız. Oyun gecene katkısı olduysa bir kahveyle destek olabilirsin.",
+    disclaimer: "Resmi olmayan, hayran yapımı bir araçtır. CATAN GmbH ile bağlantılı değildir ve onun tarafından onaylanmamıştır. CATAN, CATAN GmbH'nin tescilli markasıdır.",
     wood: "Orman",
     brick: "Tuğla",
     sheep: "Koyun",
@@ -242,19 +275,23 @@ function drawHarbors(state, size, origin, animate, baseDelay) {
   const POST = "#5A3A1F", BADGE_BG = "#F4E8D0", BADGE_TEXT = "#3E2E1C";
 
   for (const h of state.harbors) {
-    const { x: cx, y: cy } = axialToPixel(state.tiles[h.cell], size, origin);
+    const { x: cx, y: cy } = tilePos(state.tiles[h.cell], size, origin);
+    const ys = look.ys;
     const a = CatanGen.hexCornerUnit(h.edge);
     const b = CatanGen.hexCornerUnit(h.edge + 1);
-    const ax = cx + a.x * size * 0.94, ay = cy + a.y * size * 0.94;
-    const bx = cx + b.x * size * 0.94, by = cy + b.y * size * 0.94;
     const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    // Piers on the near (lower) side would hide behind the tile's
+    // extrusion; drop them to its foot, as the app does.
+    const drop = my > 0.01 ? size * look.depth : 0;
+    const ax = cx + a.x * size * 0.94, ay = cy + a.y * size * 0.94 * ys + drop;
+    const bx = cx + b.x * size * 0.94, by = cy + b.y * size * 0.94 * ys + drop;
     const ml = Math.hypot(mx, my);
     const nx = mx / ml, ny = my / ml;
     let tx = bx - ax, ty = by - ay;
     const tl = Math.hypot(tx, ty);
     tx /= tl; ty /= tl;
     const outDist = ml * size + size * 0.68;
-    const ox = cx + nx * outDist, oy = cy + ny * outDist;
+    const ox = cx + nx * outDist, oy = cy + ny * outDist * ys + drop;
     const halfOuter = tl * 0.36;
     const depth = size * 0.1;
     const oxA = ox + tx * halfOuter, oyA = oy + ty * halfOuter;
@@ -280,7 +317,7 @@ function drawHarbors(state, size, origin, animate, baseDelay) {
       .forEach(([px, py]) => g.appendChild(svgEl("circle", { cx: px, cy: py, r: size * 0.075, fill: POST })));
 
     const ccx = cx + nx * (ml * size + size * 0.34);
-    const ccy = cy + ny * (ml * size + size * 0.34);
+    const ccy = cy + ny * (ml * size + size * 0.34) * ys + drop;
     const badgeR = size * 0.26;
     g.appendChild(svgEl("circle", {
       cx: ccx, cy: ccy, r: badgeR, fill: BADGE_BG, stroke: PIER_SIDE, "stroke-width": size * 0.024,
@@ -309,6 +346,8 @@ function drawHarbors(state, size, origin, animate, baseDelay) {
 // tiles still and only fade the re-dealt piers in.
 function draw(boardState, drawOpts) {
   const harborsOnly = Boolean(drawOpts && drawOpts.harborsOnly);
+  look = LOOKS[styleSelect.value] || LOOKS.modern;
+  const modern = look !== LOOKS.classic;
   clearSvg(board);
 
   const defs = svgEl("defs");
@@ -332,11 +371,49 @@ function draw(boardState, drawOpts) {
   const tiles = boardState.tiles;
   const harborAnimate = animateEl.checked && !prefersReducedMotion;
   drawHarbors(boardState, size, origin, harborAnimate, harborsOnly ? 0 : tiles.length * 55 + 250);
-  tiles.forEach((tile, tileIndex) => {
-    const { x, y } = axialToPixel(tile, size, origin);
+  // Back rows first, so each tile's extrusion overlaps the row behind it.
+  const order = tiles.map((tile, tileIndex) => ({ tile, tileIndex }));
+  if (modern) order.sort((p, q) => tilePos(p.tile, size, origin).y - tilePos(q.tile, size, origin).y);
+  order.forEach(({ tile, tileIndex }) => {
+    const { x, y } = tilePos(tile, size, origin);
     const meta = typeMeta(tile.key);
 
     const g = svgEl("g");
+
+    if (modern) {
+      const w = Math.sqrt(3) * size;
+      g.appendChild(svgEl("image", {
+        href: `assets/modern/${tile.key}.webp`,
+        x: x - w / 2, y: y - size * look.ys,
+        width: w, height: 2 * size * look.ys + look.depth * size,
+        preserveAspectRatio: "none",
+      }));
+      const ty = y + size * 0.42 * look.ys;  // token centre, as in the app
+      if (showNumbersEl.checked && tile.number != null) {
+        const isHot = (tile.number === 6 || tile.number === 8);
+        g.appendChild(svgEl("circle", {
+          cx: x, cy: ty, r: size * 0.29,
+          fill: "#FBF6EA", stroke: "rgba(0,0,0,.28)", "stroke-width": "2.5", filter: "url(#shadow)",
+        }));
+        const num = svgEl("text", {
+          x, y: ty + size * 0.105, "text-anchor": "middle", "font-size": size * 0.3, "font-weight": "800",
+          fill: isHot ? "#c1121f" : "#3A3F47",
+        });
+        num.textContent = tile.number;
+        g.appendChild(num);
+      }
+      if (tile.key === "desert") {
+        const robber = svgEl("text", {
+          x, y: ty + size * 0.07, "text-anchor": "middle", "font-size": "18", "font-weight": "800",
+          fill: "rgba(60,40,20,.85)", stroke: "rgba(255,246,230,.8)", "stroke-width": "4", "paint-order": "stroke",
+        });
+        robber.textContent = "ROBBER";
+        g.appendChild(robber);
+      }
+      board.appendChild(g);
+      if (animate) animateTile(g, tileIndex);
+      return;
+    }
 
     const poly = svgEl("polygon", {
       points: hexPoints(x, y, size),
@@ -404,26 +481,30 @@ function draw(boardState, drawOpts) {
 
     board.appendChild(g);
 
-    if (animate) {
-      const dx = (Math.random() - 0.5) * 560;
-      const dy = -240 - Math.random() * 160;
-      const rot = (Math.random() - 0.5) * 70;
-      const delay = tileIndex * 55;
-      g.style.transformBox = "fill-box";
-      g.style.transformOrigin = "center";
-      g.style.opacity = "0";
-      g.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg) scale(1.15)`;
-      g.style.transition =
-        `transform 620ms cubic-bezier(.17,.84,.44,1) ${delay}ms, ` +
-        `opacity 260ms ease ${delay}ms`;
-      // Double rAF: guarantees the browser has painted the initial
-      // (off-screen) state before the transition to final values starts.
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        g.style.opacity = "1";
-        g.style.transform = "translate(0,0) rotate(0deg) scale(1)";
-      }));
-    }
+    if (animate) animateTile(g, tileIndex);
   });
+}
+
+// Tiles genuinely scatter onto the board — random direction/tilt per tile,
+// staggered, settling with a spring-like ease.
+function animateTile(g, tileIndex) {
+  const dx = (Math.random() - 0.5) * 560;
+  const dy = -240 - Math.random() * 160;
+  const rot = (Math.random() - 0.5) * 70;
+  const delay = tileIndex * 55;
+  g.style.transformBox = "fill-box";
+  g.style.transformOrigin = "center";
+  g.style.opacity = "0";
+  g.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg) scale(1.15)`;
+  g.style.transition =
+    `transform 620ms cubic-bezier(.17,.84,.44,1) ${delay}ms, ` +
+    `opacity 260ms ease ${delay}ms`;
+  // Double rAF: guarantees the browser has painted the initial
+  // (off-screen) state before the transition to final values starts.
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    g.style.opacity = "1";
+    g.style.transform = "translate(0,0) rotate(0deg) scale(1)";
+  }));
 }
 
 function currentSeed() {
@@ -519,6 +600,11 @@ showNumbersEl.addEventListener("change", regenerate);
 
 animateEl.addEventListener("change", () => {
   localStorage.setItem('catanAnimate', animateEl.checked ? '1' : '0');
+  regenerate();
+});
+
+styleSelect.addEventListener("change", () => {
+  localStorage.setItem('catanStyle', styleSelect.value);
   regenerate();
 });
 
