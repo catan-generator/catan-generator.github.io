@@ -373,6 +373,28 @@ function draw(boardState, drawOpts) {
   const tiles = boardState.tiles;
   const harborAnimate = animateEl.checked && !prefersReducedMotion;
   drawHarbors(boardState, size, origin, harborAnimate, harborsOnly ? 0 : tiles.length * 55 + 250);
+  // Modern bitmaps have soft, slightly inset edges. A dark "land" base the
+  // exact size of each tile sits under the whole island, so the seams between
+  // neighbours read as earth instead of sea.
+  if (modern) {
+    const base = svgEl("g");
+    tiles.forEach((tile) => {
+      const { x, y } = tilePos(tile, size, origin);
+      const hw = Math.sqrt(3) * size / 2, hy = size * look.ys, dp = size * look.depth;
+      base.appendChild(svgEl("polygon", {
+        points: [[x, y - hy], [x + hw, y - hy / 2], [x + hw, y + hy / 2 + dp], [x, y + hy + dp],
+                 [x - hw, y + hy / 2 + dp], [x - hw, y - hy / 2]].map((p) => p.join(",")).join(" "),
+        fill: "#2B2116", stroke: "#2B2116", "stroke-width": "3", "stroke-linejoin": "round",
+      }));
+    });
+    board.appendChild(base);
+    if (animate) {
+      base.style.opacity = "0";
+      base.style.transition = `opacity 400ms ease ${tiles.length * 55 + 200}ms`;
+      requestAnimationFrame(() => requestAnimationFrame(() => { base.style.opacity = "1"; }));
+    }
+  }
+
   // Back rows first, so each tile's extrusion overlaps the row behind it.
   const order = tiles.map((tile, tileIndex) => ({ tile, tileIndex }));
   if (modern) order.sort((p, q) => tilePos(p.tile, size, origin).y - tilePos(q.tile, size, origin).y);
@@ -383,14 +405,11 @@ function draw(boardState, drawOpts) {
     const g = svgEl("g");
 
     if (modern) {
-      // The bitmaps have soft, slightly inset edges; drawing each one a few
-      // percent larger closes the dark seams between neighbours.
-      const OVERLAP = 1.06;
-      const w = Math.sqrt(3) * size * OVERLAP;
+      const w = Math.sqrt(3) * size;
       g.appendChild(svgEl("image", {
         href: `assets/modern/${tile.key}.webp?v=2`,
-        x: x - w / 2, y: y - size * look.ys * OVERLAP,
-        width: w, height: (2 * size * look.ys + look.depth * size) * OVERLAP,
+        x: x - w / 2, y: y - size * look.ys,
+        width: w, height: 2 * size * look.ys + look.depth * size,
         preserveAspectRatio: "none",
       }));
       const ty = y + size * 0.42 * look.ys;  // token centre, as in the app
