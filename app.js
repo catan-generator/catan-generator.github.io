@@ -348,6 +348,8 @@ function draw(boardState, drawOpts) {
   const harborsOnly = Boolean(drawOpts && drawOpts.harborsOnly);
   look = LOOKS[styleSelect.value] || LOOKS.modern;
   const modern = look !== LOOKS.classic;
+  // Modern tiles are pictures already; the colour legend only helps the classic look.
+  document.getElementById("legendPanel").hidden = modern;
   clearSvg(board);
 
   const defs = svgEl("defs");
@@ -381,11 +383,14 @@ function draw(boardState, drawOpts) {
     const g = svgEl("g");
 
     if (modern) {
-      const w = Math.sqrt(3) * size;
+      // The bitmaps have soft, slightly inset edges; drawing each one a few
+      // percent larger closes the dark seams between neighbours.
+      const OVERLAP = 1.06;
+      const w = Math.sqrt(3) * size * OVERLAP;
       g.appendChild(svgEl("image", {
         href: `assets/modern/${tile.key}.webp`,
-        x: x - w / 2, y: y - size * look.ys,
-        width: w, height: 2 * size * look.ys + look.depth * size,
+        x: x - w / 2, y: y - size * look.ys * OVERLAP,
+        width: w, height: (2 * size * look.ys + look.depth * size) * OVERLAP,
         preserveAspectRatio: "none",
       }));
       const ty = y + size * 0.42 * look.ys;  // token centre, as in the app

@@ -292,6 +292,10 @@ a.coffeeBtn:hover{ transform: scale(1.04); border-color: var(--accent); color: v
   .canvasWrap{ min-height: 0; display:flex; }
   .canvasWrap svg{ width: 100%; height: 100%; }
   .sidebar{ min-height: 0; overflow-y: auto; scrollbar-width: thin; }
+  .sidebar > *{ flex-shrink: 0; }  /* panels keep their height; the column scrolls instead */
+  .sidebar .panel{ padding: 16px 18px; }
+  .optList .checkbox{ padding: 8px 0; }
+  .hint{ margin-top: 10px; font-size: 12px; line-height: 1.45; padding: 10px 12px; }
   .siteFooter{ margin: 12px 0 12px; gap: 6px; }
 }
 
@@ -313,3 +317,4 @@ a.coffeeBtn:hover{ transform: scale(1.04); border-color: var(--accent); color: v
 }
 .aboutDlg .coffeeNote{ margin-top: 18px; color: var(--muted); font-size: 14px; }
 .aboutDlg .disclaimer{ margin-top: 8px; }
+[hidden]{ display: none !important; }
