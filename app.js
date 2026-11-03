@@ -407,7 +407,7 @@ function draw(boardState, drawOpts) {
     if (modern) {
       const w = Math.sqrt(3) * size;
       g.appendChild(svgEl("image", {
-        href: `assets/modern/${tile.key}.webp?v=2`,
+        href: `assets/modern/${tile.key}.webp?v=3`,
         x: x - w / 2, y: y - size * look.ys,
         width: w, height: 2 * size * look.ys + look.depth * size,
         preserveAspectRatio: "none",
