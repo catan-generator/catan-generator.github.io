@@ -388,7 +388,7 @@ function draw(boardState, drawOpts) {
       const OVERLAP = 1.06;
       const w = Math.sqrt(3) * size * OVERLAP;
       g.appendChild(svgEl("image", {
-        href: `assets/modern/${tile.key}.webp`,
+        href: `assets/modern/${tile.key}.webp?v=2`,
         x: x - w / 2, y: y - size * look.ys * OVERLAP,
         width: w, height: (2 * size * look.ys + look.depth * size) * OVERLAP,
         preserveAspectRatio: "none",
